@@ -9,7 +9,7 @@
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
         body { 
             margin: 0; padding: 0; 
-            background-color: #111; /* Fundo escuro */
+            background-color: #111; 
             overflow: hidden; width: 100%; height: 100%; 
             position: fixed; font-family: sans-serif;
         }
@@ -23,24 +23,31 @@
             z-index: 2; pointer-events: none; 
         }
 
-        /* CONTROLES PRINCIPAIS (Troca de Moldura e Virar Câmera) */
-        .top-controls {
-            position: absolute; top: 15px; left: 0; width: 100%;
-            display: flex; justify-content: space-between; align-items: center;
-            padding: 0 15px; z-index: 999;
+        /* CONTROLES GERAIS (TUDO NA PARTE INFERIOR) */
+        .controls-area {
+            position: absolute; bottom: 0; left: 0; width: 100%;
+            display: flex; flex-direction: column; align-items: center;
+            padding-bottom: 10px; z-index: 999;
+            background: linear-gradient(to top, rgba(0,0,0,0.8), rgba(0,0,0,0)); /* Fundo escuro suave */
         }
 
-        /* CONTROLES INFERIORES (Tirar Foto / Gravar) */
-        .controls {
-            position: absolute; bottom: 15px; left: 0; width: 100%;
-            display: flex; justify-content: center; align-items: center;
-            gap: 20px; z-index: 999;
+        /* LINHA 1: Botões de Filtro */
+        .filter-buttons {
+            display: flex; justify-content: center; gap: 10px;
+            margin-bottom: 15px;
         }
         
+        /* LINHA 2: Botões de Ação (Câmera, Vídeo, Flip) */
+        .action-buttons {
+            display: flex; justify-content: center; align-items: center;
+            gap: 20px; 
+            padding-bottom: 5px;
+        }
+
         .btn { cursor: pointer; transition: transform 0.1s; box-shadow: 0 4px 10px rgba(0,0,0,0.5); }
         .btn:active { transform: scale(0.9); }
 
-        /* Estilo dos Botões de TROCA DE MOLDURA (Novos) */
+        /* Estilo dos Botões de TROCA DE MOLDURA */
         .btn-filter {
             padding: 8px 15px; border-radius: 50px; border: none;
             font-size: 13px; font-weight: 600; text-transform: uppercase;
@@ -48,7 +55,7 @@
             transition: all 0.3s ease;
         }
 
-        /* Botão 1: Floral (Lavanda) */
+        /* Botão 1: Floral (Lilás) */
         .btn-lil { 
             background-color: #E6E6FA; 
             color: #554455; 
@@ -62,19 +69,7 @@
             border: 1px solid rgba(255,255,255,0.7); 
         }
 
-        /* 1. BOTÃO VIRAR (Fica no TOP-LEFT) */
-        .btn-flip {
-            width: 50px; height: 50px;
-            background: rgba(255, 255, 255, 0.2); /* Transparente discreto */
-            border: 1px solid white; border-radius: 50%; 
-            display: flex; justify-content: center; align-items: center;
-        }
-        .icon-refresh {
-            width: 25px; height: 25px;
-            fill: none; stroke: white; stroke-width: 3; stroke-linecap: round; stroke-linejoin: round;
-        }
-
-        /* 2. BOTÃO FOTO (Centro) - Dourado */
+        /* BOTÃO TIRAR FOTO (Centro) - Dourado */
         .btn-shot {
             width: 80px; height: 80px;
             /* Gradiente Dourado Nobre */
@@ -82,24 +77,36 @@
             border: 4px solid #4a3b10; border-radius: 50%;
             box-shadow: 0 0 15px rgba(255, 223, 0, 0.5);
             /* Ícone de Câmera centralizado */
-            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='white'%3E%3Cpath d='M20 5h-3.17L15 3H9L7.17 5H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 14H4V7h4.05l1.83-2h4.24l1.83 2H20v12zM12 9c-2.76 0-5 2.24-5 5s2.24 5 5 5 5-2.24 5-5-2.24-5-5-5zm0 8c-1.66 0-3-1.34-3-3s1.34-3 3-3 3 1.34 3 3-1.34 3-3 3z'/%3E%3C/svg%3E");
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='black'%3E%3Cpath d='M20 5h-3.17L15 3H9L7.17 5H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 14H4V7h4.05l1.83-2h4.24l1.83 2H20v12zM12 9c-2.76 0-5 2.24-5 5s2.24 5 5 5 5-2.24 5-5-2.24-5-5-5zm0 8c-1.66 0-3-1.34-3-3s1.34-3 3-3 3 1.34 3 3-1.34 3-3 3z'/%3E%3C/svg%3E");
             background-size: 50%; background-position: center; background-repeat: no-repeat;
         }
 
-        /* 3. BOTÃO VÍDEO (Inferior Direito) - Vermelho/Gravação */
+        /* BOTÃO VÍDEO (Filmadora) */
         .btn-video {
             width: 65px; height: 65px;
-            background: #c0392b; /* Vermelho mais elegante */
+            background: #c0392b; /* Vermelho */
             border: 3px solid white; border-radius: 50%;
             display: flex; justify-content: center; align-items: center;
-            position: relative;
         }
         .icon-cam-img {
-            width: 25px; height: 25px;
-            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='white'%3E%3Ccircle cx='12' cy='12' r='8'/%3E%3C/svg%3E");
+            width: 30px; height: 30px;
+            /* Ícone de Filmadora (Vídeo) */
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='white'%3E%3Cpath d='M17 10.5V7c0-.55-.45-1-1-1H4c-.55 0-1 .45-1 1v10c0 .55.45 1 1 1h12c.55 0 1-.45 1-1v-3.5l4 4v-11l-4 4z'/%3E%3C/svg%3E");
             background-repeat: no-repeat; background-position: center;
         }
 
+        /* BOTÃO VIRAR CÂMERA (Novo tamanho para se adequar ao layout) */
+        .btn-flip {
+            width: 50px; height: 50px;
+            background: rgba(255, 255, 255, 0.2); 
+            border: 1px solid white; border-radius: 50%; 
+            display: flex; justify-content: center; align-items: center;
+        }
+        .icon-refresh {
+            width: 25px; height: 25px;
+            fill: none; stroke: white; stroke-width: 3; stroke-linecap: round; stroke-linejoin: round;
+        }
+        
         /* Estilo GRAVANDO */
         .recording {
             animation: pulse 1s infinite;
@@ -113,7 +120,7 @@
 
         @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.05); } 100% { transform: scale(1); } }
 
-        /* PREVIEW */
+        /* PREVIEW - Mantido o design */
         #preview-screen {
             display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: #000; z-index: 10000;
@@ -129,31 +136,34 @@
             color: white; font-weight: bold; font-size: 13px; cursor: pointer; text-transform: uppercase;
             flex: 1; display: flex; justify-content: center; align-items: center; gap: 5px;
         }
-        .btn-save { background: #bf953f; border: 2px solid white; color: black; } /* Dourado */
-        .btn-retry { background: #c0392b; border: 2px solid white; } /* Vermelho */
+        .btn-save { background: #bf953f; border: 2px solid white; color: black; } 
+        .btn-retry { background: #c0392b; border: 2px solid white; } 
         #canvasOutput { display: none; }
     </style>
 </head>
 <body>
     <video id="camera" autoplay playsinline muted></video>
-    <img id="moldura" src="moldura_lilas.png" alt="Moldura"> <div class="top-controls">
-        <div style="display: flex; gap: 10px;">
-            <button class="btn-filter btn-lil" onclick="setFrame('moldura_lilas.png')">🌸 Floral</button>
-            <button class="btn-filter btn-min" onclick="setFrame('moldura_minimalista.png')">✨ Minimalista</button>
-        </div>
-        <button class="btn btn-flip" onclick="virarCamera()">
-            <svg class="icon-refresh" viewBox="0 0 24 24">
-                <path d="M23 4v6h-6"></path><path d="M1 20v-6h6"></path>
-                <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path>
-            </svg>
-        </button>
-    </div>
+    <img id="moldura" src="moldura_lilas.png" alt="Moldura"> 
 
-    <div class="controls">
-        <button class="btn btn-shot" onclick="tirarFoto()"></button>
-        <button id="btnVideo" class="btn btn-video" onclick="alternarGravacao()">
-            <div class="icon-cam-img"></div>
-        </button>
+    <div class="controls-area">
+        
+        <div class="filter-buttons">
+            <button class="btn-filter btn-lil" onclick="setFrame('moldura_lilas.png')">FILTRO 1</button>
+            <button class="btn-filter btn-min" onclick="setFrame('moldura_minimalista.png')">FILTRO 2</button>
+        </div>
+
+        <div class="action-buttons">
+             <button class="btn btn-flip" onclick="virarCamera()">
+                <svg class="icon-refresh" viewBox="0 0 24 24">
+                    <path d="M23 4v6h-6"></path><path d="M1 20v-6h6"></path>
+                    <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path>
+                </svg>
+            </button>
+            <button class="btn btn-shot" onclick="tirarFoto()"></button>
+            <button id="btnVideo" class="btn btn-video" onclick="alternarGravacao()">
+                <div class="icon-cam-img"></div>
+            </button>
+        </div>
     </div>
 
     <div id="preview-screen">
@@ -169,7 +179,7 @@
     <canvas id="canvasOutput"></canvas>
 
     <script>
-        // Mapeamento dos elementos DOM
+        // Mapeamento dos elementos DOM (mantido)
         const video = document.getElementById('camera');
         const moldura = document.getElementById('moldura');
         const canvas = document.getElementById('canvasOutput');
@@ -179,9 +189,9 @@
         const btnVideo = document.getElementById('btnVideo');
         const shutterSound = new Audio('https://cdn.pixabay.com/download/audio/2022/03/10/audio_c04f968038.mp3?filename=camera-shutter-click-03-58060.mp3');
 
-        // Variáveis de estado
+        // Variáveis de estado (mantido)
         let currentStream;
-        let facingMode = "user"; // Começa com câmera frontal (selfie)
+        let facingMode = "user"; // Câmera frontal por padrão
         let mediaRecorder;
         let recordedChunks = [];
         let isRecording = false;
@@ -190,20 +200,18 @@
         let recordedMimeType = ''; 
 
         // ---------------------------------------------------------
-        // FUNÇÃO DE TROCA DE MOLDURA (NOVA)
+        // FUNÇÃO DE TROCA DE MOLDURA (mantida)
         // ---------------------------------------------------------
         function setFrame(src) {
             moldura.src = src;
         }
 
         // ---------------------------------------------------------
-        // Funções Originais (Apenas Limpeza do Código e Ajuste de Nomes)
+        // Funções de Câmera e Gravação (mantidas)
         // ---------------------------------------------------------
-
         function iniciarCamera() {
             if (currentStream) currentStream.getTracks().forEach(track => track.stop());
             
-            // Requisita vídeo e áudio
             navigator.mediaDevices.getUserMedia({ 
                 video: { facingMode: facingMode, width: { ideal: 1280 }, height: { ideal: 720 } }, 
                 audio: true 
@@ -211,7 +219,7 @@
             .then(stream => {
                 currentStream = stream;
                 video.srcObject = stream;
-                video.style.transform = facingMode === "user" ? "scaleX(-1)" : "scaleX(1)"; // Espelha se for selfie
+                video.style.transform = facingMode === "user" ? "scaleX(-1)" : "scaleX(1)";
                 desenharNoCanvas();
             }).catch(err => {
                 console.log("Erro: " + err);
@@ -226,7 +234,6 @@
                 const ctx = canvas.getContext('2d');
 
                 // 1. APLICA FILTRO DE EMBELEZAMENTO NO VÍDEO (No Canvas)
-                // Usando as configurações CSS que estavam no código de referência:
                 ctx.filter = 'saturate(1.2) brightness(1.1) contrast(1.05) blur(0.5px)';
 
                 ctx.save();
@@ -263,7 +270,6 @@
                     combinedStream = new MediaStream([ ...canvasStream.getVideoTracks(), ...audioTracks ]);
                 }
 
-                // Tenta VP9 (melhor qualidade) -> VP8 -> WebM genérico
                 const possibleTypes = [
                     'video/webm;codecs=vp9,opus', 'video/webm;codecs=vp8,opus',
                     'video/webm'
