@@ -3,53 +3,112 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Filtro Casamento - Duas Opções</title>
+    <title>Foto Casamento - Jessica & Robson</title>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Raleway:wght@300;500&display=swap" rel="stylesheet">
+
     <style>
-        body { margin: 0; display: flex; flex-direction: column; align-items: center; background: #222; font-family: sans-serif; }
-        h2 { color: white; }
+        body { 
+            margin: 0; 
+            display: flex; 
+            flex-direction: column; 
+            align-items: center; 
+            background: #1a1a1a; /* Fundo grafite elegante */
+            font-family: 'Raleway', sans-serif; 
+            color: white;
+            padding-bottom: 20px;
+        }
+
+        h2 { 
+            font-family: 'Playfair Display', serif; 
+            color: #dcbfa5; /* Tom champagne/dourado claro */
+            font-weight: 400;
+            letter-spacing: 1px;
+            margin-top: 20px;
+            margin-bottom: 15px;
+            font-style: italic;
+        }
         
         /* Container da câmera */
         #canvas-container {
             position: relative;
             width: 100%;
-            max-width: 400px; /* Tamanho estilo celular */
+            max-width: 400px; 
             aspect-ratio: 9/16;
             background: #000;
             overflow: hidden;
-            border: 2px solid #fff;
+            border: 1px solid #dcbfa5; /* Borda fina champagne */
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5); /* Sombra para destacar */
+            border-radius: 4px;
         }
 
         canvas { width: 100%; height: 100%; object-fit: cover; }
 
-        /* Botões */
-        .controls { margin-top: 20px; display: flex; gap: 10px; }
-        button {
-            padding: 10px 20px;
-            font-size: 16px;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            font-weight: bold;
+        /* Área dos Botões */
+        .controls { 
+            margin-top: 25px; 
+            display: flex; 
+            gap: 15px; 
+            justify-content: center;
         }
-        .btn-lil { background-color: #d8bfd8; color: #333; } /* Cor Lilás */
-        .btn-min { background-color: #333; color: white; border: 1px solid white; } /* Cor Minimalista */
-        .btn-foto { background-color: #eebb44; color: black; margin-top: 15px; width: 200px;}
+
+        button {
+            padding: 12px 24px;
+            font-size: 14px;
+            border-radius: 50px; /* Botões arredondados */
+            cursor: pointer;
+            font-weight: 600;
+            font-family: 'Raleway', sans-serif;
+            transition: transform 0.2s, opacity 0.2s;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        button:active {
+            transform: scale(0.95);
+        }
+
+        /* Botão Estilo Lilás/Floral */
+        .btn-lil { 
+            background-color: #E6E6FA; /* Lavanda suave */
+            color: #5d4b5d; 
+            border: 1px solid #dcbfa5; /* Borda dourada sutil */
+        }
+        
+        /* Botão Estilo Minimalista */
+        .btn-min { 
+            background-color: #222; 
+            color: white; 
+            border: 1px solid rgba(255,255,255,0.6); 
+        }
+
+        /* Botão de Tirar Foto (Dourado) */
+        .btn-foto { 
+            background: linear-gradient(45deg, #bf953f, #fcf6ba, #b38728); /* Gradiente Dourado */
+            color: #4a3b18; 
+            margin-top: 25px; 
+            width: 220px;
+            border: none;
+            box-shadow: 0 4px 15px rgba(191, 149, 63, 0.4);
+            font-size: 16px;
+        }
+
     </style>
 </head>
 <body>
 
-    <h2>Escolha sua Moldura</h2>
+    <h2>Registre esse momento</h2>
 
     <div id="canvas-container">
         <canvas id="photoCanvas"></canvas>
     </div>
 
     <div class="controls">
-        <button class="btn-lil" onclick="setFrame(1)">Opção Lilás</button>
-        <button class="btn-min" onclick="setFrame(2)">Opção Minimalista</button>
+        <button class="btn-lil" onclick="setFrame(1)">🌸 Floral</button>
+        <button class="btn-min" onclick="setFrame(2)">✨ Minimalista</button>
     </div>
 
-    <button class="btn-foto" onclick="downloadPhoto()">📸 Baixar Foto</button>
+    <button class="btn-foto" onclick="downloadPhoto()">📸 Salvar Foto</button>
 
     <script>
         const canvas = document.getElementById('photoCanvas');
@@ -63,11 +122,10 @@
         let currentFrame = new Image();
         
         // ---------------------------------------------------------
-        // IMPORTANTE: Mude os nomes abaixo para os nomes reais dos seus arquivos
-        // Certifique-se que ambos são .png com fundo transparente
+        // Nomes dos arquivos (Não alterei para manter funcionando)
         // ---------------------------------------------------------
-        const frameSrc1 = 'moldura_lilas.png'; // Nome do arquivo da moldura 1
-        const frameSrc2 = 'moldura_minimalista.png'; // Nome do arquivo da moldura 2
+        const frameSrc1 = 'moldura_lilas.png'; 
+        const frameSrc2 = 'moldura_minimalista.png'; 
         
         // Inicia com a primeira moldura
         currentFrame.src = frameSrc1;
@@ -75,20 +133,46 @@
         // 1. Iniciar Câmera
         async function startCamera() {
             try {
+                // Tenta pegar a câmera traseira em celulares, ou frontal em PC
                 const stream = await navigator.mediaDevices.getUserMedia({ 
-                    video: { facingMode: "user", width: { ideal: 1080 }, height: { ideal: 1920 } } 
+                    video: { 
+                        facingMode: "environment", // Tenta câmera traseira (melhor qualidade)
+                        width: { ideal: 1080 }, 
+                        height: { ideal: 1920 } 
+                    } 
                 });
+                
                 const video = document.createElement('video');
                 video.srcObject = stream;
+                video.setAttribute('playsinline', ''); // Importante para iPhone
                 video.play();
                 
-                // Loop de desenho (Renderização)
                 function draw() {
-                    // Desenha o vídeo da câmera (espelhado horizontalmente para parecer espelho)
-                    ctx.save();
-                    ctx.scale(-1, 1);
-                    ctx.drawImage(video, -canvas.width, 0, canvas.width, canvas.height);
-                    ctx.restore();
+                    // Limpa o canvas
+                    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+                    // Desenha o vídeo (Cobre toda a tela mantendo proporção)
+                    // Nota: Removi o espelhamento pois na câmera traseira fica estranho ler textos
+                    // Se for usar câmera frontal (selfie), avise que coloco o espelhamento de volta
+                    
+                    // Lógica para preencher a tela sem esticar (Cover)
+                    const videoRatio = video.videoWidth / video.videoHeight;
+                    const canvasRatio = canvas.width / canvas.height;
+                    let drawWidth, drawHeight, startX, startY;
+
+                    if (videoRatio > canvasRatio) {
+                        drawHeight = canvas.height;
+                        drawWidth = drawHeight * videoRatio;
+                        startX = (canvas.width - drawWidth) / 2;
+                        startY = 0;
+                    } else {
+                        drawWidth = canvas.width;
+                        drawHeight = drawWidth / videoRatio;
+                        startX = 0;
+                        startY = (canvas.height - drawHeight) / 2;
+                    }
+
+                    ctx.drawImage(video, startX, startY, drawWidth, drawHeight);
 
                     // Desenha a moldura por cima
                     if (currentFrame.complete) {
@@ -99,25 +183,25 @@
                 }
                 draw();
             } catch (err) {
-                alert("Erro ao acessar câmera: " + err);
+                alert("Erro ao acessar câmera. Verifique as permissões. " + err);
             }
         }
 
-        // 2. Função para trocar a moldura
         function setFrame(option) {
             if (option === 1) currentFrame.src = frameSrc1;
             if (option === 2) currentFrame.src = frameSrc2;
         }
 
-        // 3. Função para baixar a foto
         function downloadPhoto() {
             const link = document.createElement('a');
-            link.download = 'foto-casamento.png';
+            // Gera um nome de arquivo com a data/hora para não repetir
+            const date = new Date();
+            const timeString = date.getHours() + "-" + date.getMinutes() + "-" + date.getSeconds();
+            link.download = 'casamento_' + timeString + '.png';
             link.href = canvas.toDataURL();
             link.click();
         }
 
-        // Inicia tudo
         startCamera();
     </script>
 </body>
