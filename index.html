@@ -3,48 +3,48 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Foto Casamento - Jessica & Robson</title>
-    
-    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Raleway:wght@300;500&display=swap" rel="stylesheet">
-
+    <title>Filtro Vídeo Casamento</title>
     <style>
         body { 
             margin: 0; 
             display: flex; 
             flex-direction: column; 
             align-items: center; 
-            background: #1a1a1a; /* Fundo grafite elegante */
-            font-family: 'Raleway', sans-serif; 
-            color: white;
-            padding-bottom: 20px;
-        }
-
-        h2 { 
-            font-family: 'Playfair Display', serif; 
-            color: #dcbfa5; /* Tom champagne/dourado claro */
-            font-weight: 400;
-            letter-spacing: 1px;
-            margin-top: 20px;
-            margin-bottom: 15px;
-            font-style: italic;
+            background: #111; 
+            font-family: sans-serif; 
+            padding-top: 20px;
         }
         
         /* Container da câmera */
         #canvas-container {
             position: relative;
-            width: 100%;
-            max-width: 400px; 
+            width: 90%; 
+            max-width: 400px;
             aspect-ratio: 9/16;
             background: #000;
             overflow: hidden;
-            border: 1px solid #dcbfa5; /* Borda fina champagne */
-            box-shadow: 0 10px 30px rgba(0,0,0,0.5); /* Sombra para destacar */
-            border-radius: 4px;
+            border: 2px solid rgba(255,255,255,0.2);
+            border-radius: 8px;
+            box-shadow: 0 0 20px rgba(0,0,0,0.8);
         }
 
         canvas { width: 100%; height: 100%; object-fit: cover; }
+        
+        /* Indicador de Gravação */
+        #record-indicator {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            background-color: red;
+            color: white;
+            padding: 5px 10px;
+            border-radius: 5px;
+            display: none; /* Escondido por padrão */
+            font-weight: bold;
+            z-index: 10;
+        }
 
-        /* Área dos Botões */
+        /* Área dos botões de troca de filtro */
         .controls { 
             margin-top: 25px; 
             display: flex; 
@@ -53,54 +53,64 @@
         }
 
         button {
-            padding: 12px 24px;
+            padding: 12px 25px;
             font-size: 14px;
-            border-radius: 50px; /* Botões arredondados */
+            border: none;
+            border-radius: 50px; 
             cursor: pointer;
             font-weight: 600;
-            font-family: 'Raleway', sans-serif;
-            transition: transform 0.2s, opacity 0.2s;
             text-transform: uppercase;
-            letter-spacing: 0.5px;
+            letter-spacing: 1px;
+            transition: all 0.3s ease;
+            white-space: nowrap; /* Impede quebras de linha */
         }
 
-        button:active {
-            transform: scale(0.95);
-        }
-
-        /* Botão Estilo Lilás/Floral */
+        /* Estilo Botão 1: Floral (Lavanda) */
         .btn-lil { 
-            background-color: #E6E6FA; /* Lavanda suave */
-            color: #5d4b5d; 
-            border: 1px solid #dcbfa5; /* Borda dourada sutil */
+            background-color: #E6E6FA; 
+            color: #554455; 
+            border: 1px solid #E6E6FA;
         }
         
-        /* Botão Estilo Minimalista */
+        /* Estilo Botão 2: Minimalista (Preto/Branco) */
         .btn-min { 
-            background-color: #222; 
+            background-color: transparent; 
             color: white; 
-            border: 1px solid rgba(255,255,255,0.6); 
+            border: 1px solid rgba(255,255,255,0.7); 
         }
 
-        /* Botão de Tirar Foto (Dourado) */
-        .btn-foto { 
-            background: linear-gradient(45deg, #bf953f, #fcf6ba, #b38728); /* Gradiente Dourado */
-            color: #4a3b18; 
+        /* Botão Gravar/Parar (Dourado) */
+        .btn-record { 
+            background: linear-gradient(90deg, #bf953f, #fcf6ba, #bf953f); /* Efeito ouro */
+            color: #4a3b10; 
             margin-top: 25px; 
-            width: 220px;
-            border: none;
-            box-shadow: 0 4px 15px rgba(191, 149, 63, 0.4);
+            width: 80%;
+            max-width: 300px;
+            padding: 15px;
             font-size: 16px;
+            box-shadow: 0 4px 15px rgba(191, 149, 63, 0.3);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
         }
+
+        /* Estilo do botão quando está gravando */
+        .btn-recording {
+            background: red !important;
+            color: white !important;
+            box-shadow: 0 4px 15px rgba(255, 0, 0, 0.5) !important;
+        }
+        
+        button:active { transform: scale(0.95); }
 
     </style>
 </head>
 <body>
 
-    <h2>Registre esse momento</h2>
-
     <div id="canvas-container">
-        <canvas id="photoCanvas"></canvas>
+        <div id="record-indicator">🔴 GRAVANDO</div>
+        <canvas id="videoCanvas"></canvas>
     </div>
 
     <div class="controls">
@@ -108,100 +118,164 @@
         <button class="btn-min" onclick="setFrame(2)">✨ Minimalista</button>
     </div>
 
-    <button class="btn-foto" onclick="downloadPhoto()">📸 Salvar Foto</button>
+    <button class="btn-record" id="recordButton" onclick="toggleRecording()">
+        <span id="recordText">🎬 GRAVAR VÍDEO</span>
+    </button>
 
     <script>
-        const canvas = document.getElementById('photoCanvas');
+        const canvas = document.getElementById('videoCanvas');
         const ctx = canvas.getContext('2d');
+        const recordButton = document.getElementById('recordButton');
+        const recordText = document.getElementById('recordText');
+        const recordIndicator = document.getElementById('record-indicator');
         
-        // Configuração de tamanho (Full HD Vertical)
+        // Configurações
         canvas.width = 1080;
         canvas.height = 1920;
-
-        let videoStream = null;
+        const FPS = 30; // Frames por segundo para a gravação
+        
+        let stream = null;
+        let mediaRecorder = null;
+        let recordedChunks = [];
+        let isRecording = false;
+        
         let currentFrame = new Image();
+        const frameSrc1 = 'moldura_lilas.png';       // Moldura 1
+        const frameSrc2 = 'moldura_minimalista.png'; // Moldura 2
         
-        // ---------------------------------------------------------
-        // Nomes dos arquivos (Não alterei para manter funcionando)
-        // ---------------------------------------------------------
-        const frameSrc1 = 'moldura_lilas.png'; 
-        const frameSrc2 = 'moldura_minimalista.png'; 
-        
-        // Inicia com a primeira moldura
         currentFrame.src = frameSrc1;
 
-        // 1. Iniciar Câmera
-        async function startCamera() {
-            try {
-                // Tenta pegar a câmera traseira em celulares, ou frontal em PC
-                const stream = await navigator.mediaDevices.getUserMedia({ 
-                    video: { 
-                        facingMode: "environment", // Tenta câmera traseira (melhor qualidade)
-                        width: { ideal: 1080 }, 
-                        height: { ideal: 1920 } 
-                    } 
-                });
-                
-                const video = document.createElement('video');
-                video.srcObject = stream;
-                video.setAttribute('playsinline', ''); // Importante para iPhone
-                video.play();
-                
-                function draw() {
-                    // Limpa o canvas
-                    ctx.clearRect(0, 0, canvas.width, canvas.height);
+        // Elemento de vídeo oculto para capturar a câmera
+        const videoElement = document.createElement('video');
+        videoElement.setAttribute('playsinline', ''); 
+        videoElement.play();
+        
+        // ---------------------------------------------------------
+        // 1. Lógica de Desenho e Renderização (Vídeo + Moldura)
+        // ---------------------------------------------------------
+        function draw() {
+            if (!stream) return;
 
-                    // Desenha o vídeo (Cobre toda a tela mantendo proporção)
-                    // Nota: Removi o espelhamento pois na câmera traseira fica estranho ler textos
-                    // Se for usar câmera frontal (selfie), avise que coloco o espelhamento de volta
-                    
-                    // Lógica para preencher a tela sem esticar (Cover)
-                    const videoRatio = video.videoWidth / video.videoHeight;
-                    const canvasRatio = canvas.width / canvas.height;
-                    let drawWidth, drawHeight, startX, startY;
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            // Lógica de "Cover" para preencher a tela com o vídeo da câmera (Selfie)
+            const videoRatio = videoElement.videoWidth / videoElement.videoHeight;
+            const canvasRatio = canvas.width / canvas.height;
+            let drawWidth, drawHeight, startX, startY;
 
-                    if (videoRatio > canvasRatio) {
-                        drawHeight = canvas.height;
-                        drawWidth = drawHeight * videoRatio;
-                        startX = (canvas.width - drawWidth) / 2;
-                        startY = 0;
-                    } else {
-                        drawWidth = canvas.width;
-                        drawHeight = drawWidth / videoRatio;
-                        startX = 0;
-                        startY = (canvas.height - drawHeight) / 2;
-                    }
-
-                    ctx.drawImage(video, startX, startY, drawWidth, drawHeight);
-
-                    // Desenha a moldura por cima
-                    if (currentFrame.complete) {
-                        ctx.drawImage(currentFrame, 0, 0, canvas.width, canvas.height);
-                    }
-                    
-                    requestAnimationFrame(draw);
-                }
-                draw();
-            } catch (err) {
-                alert("Erro ao acessar câmera. Verifique as permissões. " + err);
+            if (videoRatio > canvasRatio) {
+                drawHeight = canvas.height;
+                drawWidth = drawHeight * videoRatio;
+                startX = (canvas.width - drawWidth) / 2;
+                startY = 0;
+            } else {
+                drawWidth = canvas.width;
+                drawHeight = drawWidth / videoRatio;
+                startX = 0;
+                startY = (canvas.height - drawHeight) / 2;
             }
+
+            // Espelhamento horizontal (Selfie)
+            ctx.save();
+            ctx.translate(canvas.width, 0);
+            ctx.scale(-1, 1);
+            ctx.drawImage(videoElement, startX, startY, drawWidth, drawHeight);
+            ctx.restore();
+
+            // Desenha a moldura por cima
+            if (currentFrame.complete) {
+                ctx.drawImage(currentFrame, 0, 0, canvas.width, canvas.height);
+            }
+            
+            requestAnimationFrame(draw);
         }
 
+        // ---------------------------------------------------------
+        // 2. Controle de Câmera e Gravação
+        // ---------------------------------------------------------
+        async function startCamera() {
+            try {
+                // Pede permissão para Vídeo E Áudio
+                stream = await navigator.mediaDevices.getUserMedia({ 
+                    video: { facingMode: "user", width: { ideal: 1080 }, height: { ideal: 1920 } },
+                    audio: true
+                });
+                
+                videoElement.srcObject = stream;
+                draw(); // Começa a renderização
+            } catch (err) {
+                alert("Erro ao acessar Câmera ou Microfone: " + err + ". Certifique-se de que as permissões foram concedidas.");
+            }
+        }
+        
         function setFrame(option) {
             if (option === 1) currentFrame.src = frameSrc1;
             if (option === 2) currentFrame.src = frameSrc2;
         }
 
-        function downloadPhoto() {
-            const link = document.createElement('a');
-            // Gera um nome de arquivo com a data/hora para não repetir
-            const date = new Date();
-            const timeString = date.getHours() + "-" + date.getMinutes() + "-" + date.getSeconds();
-            link.download = 'casamento_' + timeString + '.png';
-            link.href = canvas.toDataURL();
-            link.click();
+        function toggleRecording() {
+            if (!stream) {
+                alert("Câmera não iniciada.");
+                return;
+            }
+            
+            if (!isRecording) {
+                startRecording();
+            } else {
+                stopRecording();
+            }
         }
 
+        function startRecording() {
+            // Cria um stream a partir do Canvas (vídeo) e combina com o áudio
+            const canvasStream = canvas.captureStream(FPS);
+            const audioTracks = stream.getAudioTracks();
+            if (audioTracks.length > 0) {
+                canvasStream.addTrack(audioTracks[0]);
+            }
+
+            mediaRecorder = new MediaRecorder(canvasStream, { mimeType: 'video/webm; codecs=vp8,opus' });
+            
+            recordedChunks = [];
+            mediaRecorder.ondataavailable = (event) => {
+                if (event.data.size > 0) {
+                    recordedChunks.push(event.data);
+                }
+            };
+            
+            mediaRecorder.onstop = downloadVideo;
+            
+            mediaRecorder.start();
+            isRecording = true;
+            recordButton.classList.add('btn-recording');
+            recordText.textContent = '🛑 PARAR GRAVAÇÃO';
+            recordIndicator.style.display = 'block';
+        }
+
+        function stopRecording() {
+            mediaRecorder.stop();
+            isRecording = false;
+            recordButton.classList.remove('btn-recording');
+            recordText.textContent = 'PROCESSANDO...';
+            recordIndicator.style.display = 'none';
+        }
+
+        function downloadVideo() {
+            recordText.textContent = '🎬 GRAVAR VÍDEO';
+            const blob = new Blob(recordedChunks, { type: 'video/webm' });
+            const url = URL.createObjectURL(blob);
+            
+            const a = document.createElement('a');
+            a.style.display = 'none';
+            a.href = url;
+            a.download = 'video_casamento_' + Date.now() + '.webm';
+            document.body.appendChild(a);
+            a.click();
+            
+            window.URL.revokeObjectURL(url);
+        }
+
+        // Inicia a câmera ao carregar a página
         startCamera();
     </script>
 </body>
