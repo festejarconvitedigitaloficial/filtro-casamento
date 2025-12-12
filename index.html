@@ -2,281 +2,320 @@
 <html lang="pt-br">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Filtro Vídeo Casamento</title>
+    
     <style>
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
         body { 
-            margin: 0; 
-            display: flex; 
-            flex-direction: column; 
-            align-items: center; 
-            background: #111; 
-            font-family: sans-serif; 
-            padding-top: 20px;
+            margin: 0; padding: 0; 
+            background-color: #111; /* Fundo escuro */
+            overflow: hidden; width: 100%; height: 100%; 
+            position: fixed; font-family: sans-serif;
+        }
+
+        /* VÍDEO (Fundo) */
+        #camera { position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; z-index: 1; }
+        
+        /* MOLDURA (Meio) */
+        #moldura { 
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: fill; 
+            z-index: 2; pointer-events: none; 
+        }
+
+        /* CONTROLES PRINCIPAIS (Troca de Moldura e Virar Câmera) */
+        .top-controls {
+            position: absolute; top: 15px; left: 0; width: 100%;
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 0 15px; z-index: 999;
+        }
+
+        /* CONTROLES INFERIORES (Tirar Foto / Gravar) */
+        .controls {
+            position: absolute; bottom: 15px; left: 0; width: 100%;
+            display: flex; justify-content: center; align-items: center;
+            gap: 20px; z-index: 999;
         }
         
-        /* Container da câmera */
-        #canvas-container {
-            position: relative;
-            width: 90%; 
-            max-width: 400px;
-            aspect-ratio: 9/16;
-            background: #000;
-            overflow: hidden;
-            border: 2px solid rgba(255,255,255,0.2);
-            border-radius: 8px;
-            box-shadow: 0 0 20px rgba(0,0,0,0.8);
-        }
+        .btn { cursor: pointer; transition: transform 0.1s; box-shadow: 0 4px 10px rgba(0,0,0,0.5); }
+        .btn:active { transform: scale(0.9); }
 
-        canvas { width: 100%; height: 100%; object-fit: cover; }
-        
-        /* Indicador de Gravação */
-        #record-indicator {
-            position: absolute;
-            top: 10px;
-            left: 10px;
-            background-color: red;
-            color: white;
-            padding: 5px 10px;
-            border-radius: 5px;
-            display: none; /* Escondido por padrão */
-            font-weight: bold;
-            z-index: 10;
-        }
-
-        /* Área dos botões de troca de filtro */
-        .controls { 
-            margin-top: 25px; 
-            display: flex; 
-            gap: 15px; 
-            justify-content: center;
-        }
-
-        button {
-            padding: 12px 25px;
-            font-size: 14px;
-            border: none;
-            border-radius: 50px; 
-            cursor: pointer;
-            font-weight: 600;
-            text-transform: uppercase;
-            letter-spacing: 1px;
+        /* Estilo dos Botões de TROCA DE MOLDURA (Novos) */
+        .btn-filter {
+            padding: 8px 15px; border-radius: 50px; border: none;
+            font-size: 13px; font-weight: 600; text-transform: uppercase;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.4);
             transition: all 0.3s ease;
-            white-space: nowrap; /* Impede quebras de linha */
         }
 
-        /* Estilo Botão 1: Floral (Lavanda) */
+        /* Botão 1: Floral (Lavanda) */
         .btn-lil { 
             background-color: #E6E6FA; 
             color: #554455; 
             border: 1px solid #E6E6FA;
         }
         
-        /* Estilo Botão 2: Minimalista (Preto/Branco) */
+        /* Botão 2: Minimalista (Preto/Branco) */
         .btn-min { 
-            background-color: transparent; 
+            background-color: #222; 
             color: white; 
             border: 1px solid rgba(255,255,255,0.7); 
         }
 
-        /* Botão Gravar/Parar (Dourado) */
-        .btn-record { 
-            background: linear-gradient(90deg, #bf953f, #fcf6ba, #bf953f); /* Efeito ouro */
-            color: #4a3b10; 
-            margin-top: 25px; 
-            width: 80%;
-            max-width: 300px;
-            padding: 15px;
-            font-size: 16px;
-            box-shadow: 0 4px 15px rgba(191, 149, 63, 0.3);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 10px;
+        /* 1. BOTÃO VIRAR (Fica no TOP-LEFT) */
+        .btn-flip {
+            width: 50px; height: 50px;
+            background: rgba(255, 255, 255, 0.2); /* Transparente discreto */
+            border: 1px solid white; border-radius: 50%; 
+            display: flex; justify-content: center; align-items: center;
+        }
+        .icon-refresh {
+            width: 25px; height: 25px;
+            fill: none; stroke: white; stroke-width: 3; stroke-linecap: round; stroke-linejoin: round;
         }
 
-        /* Estilo do botão quando está gravando */
-        .btn-recording {
-            background: red !important;
-            color: white !important;
-            box-shadow: 0 4px 15px rgba(255, 0, 0, 0.5) !important;
+        /* 2. BOTÃO FOTO (Centro) - Dourado */
+        .btn-shot {
+            width: 80px; height: 80px;
+            /* Gradiente Dourado Nobre */
+            background: radial-gradient(circle, #fcf6ba 20%, #bf953f 60%, #a37c35 100%);
+            border: 4px solid #4a3b10; border-radius: 50%;
+            box-shadow: 0 0 15px rgba(255, 223, 0, 0.5);
+            /* Ícone de Câmera centralizado */
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='white'%3E%3Cpath d='M20 5h-3.17L15 3H9L7.17 5H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 14H4V7h4.05l1.83-2h4.24l1.83 2H20v12zM12 9c-2.76 0-5 2.24-5 5s2.24 5 5 5 5-2.24 5-5-2.24-5-5-5zm0 8c-1.66 0-3-1.34-3-3s1.34-3 3-3 3 1.34 3 3-1.34 3-3 3z'/%3E%3C/svg%3E");
+            background-size: 50%; background-position: center; background-repeat: no-repeat;
         }
-        
-        button:active { transform: scale(0.95); }
 
+        /* 3. BOTÃO VÍDEO (Inferior Direito) - Vermelho/Gravação */
+        .btn-video {
+            width: 65px; height: 65px;
+            background: #c0392b; /* Vermelho mais elegante */
+            border: 3px solid white; border-radius: 50%;
+            display: flex; justify-content: center; align-items: center;
+            position: relative;
+        }
+        .icon-cam-img {
+            width: 25px; height: 25px;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='white'%3E%3Ccircle cx='12' cy='12' r='8'/%3E%3C/svg%3E");
+            background-repeat: no-repeat; background-position: center;
+        }
+
+        /* Estilo GRAVANDO */
+        .recording {
+            animation: pulse 1s infinite;
+            background-color: white !important;
+            border: 3px solid #c0392b !important;
+        }
+        .recording .icon-cam-img {
+            background-image: none; background-color: #c0392b;
+            width: 24px; height: 24px; border-radius: 4px;
+        }
+
+        @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.05); } 100% { transform: scale(1); } }
+
+        /* PREVIEW */
+        #preview-screen {
+            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: #000; z-index: 10000;
+            flex-direction: column; align-items: center; justify-content: center;
+        }
+        .preview-content {
+            max-width: 90%; max-height: 80%;
+            border: 2px solid #bf953f; border-radius: 8px; margin-bottom: 20px;
+        }
+        .preview-actions { display: flex; gap: 15px; width: 95%; justify-content: center; }
+        .btn-action {
+            padding: 15px 10px; border-radius: 50px; border: none;
+            color: white; font-weight: bold; font-size: 13px; cursor: pointer; text-transform: uppercase;
+            flex: 1; display: flex; justify-content: center; align-items: center; gap: 5px;
+        }
+        .btn-save { background: #bf953f; border: 2px solid white; color: black; } /* Dourado */
+        .btn-retry { background: #c0392b; border: 2px solid white; } /* Vermelho */
+        #canvasOutput { display: none; }
     </style>
 </head>
 <body>
-
-    <div id="canvas-container">
-        <div id="record-indicator">🔴 GRAVANDO</div>
-        <canvas id="videoCanvas"></canvas>
+    <video id="camera" autoplay playsinline muted></video>
+    <img id="moldura" src="moldura_lilas.png" alt="Moldura"> <div class="top-controls">
+        <div style="display: flex; gap: 10px;">
+            <button class="btn-filter btn-lil" onclick="setFrame('moldura_lilas.png')">🌸 Floral</button>
+            <button class="btn-filter btn-min" onclick="setFrame('moldura_minimalista.png')">✨ Minimalista</button>
+        </div>
+        <button class="btn btn-flip" onclick="virarCamera()">
+            <svg class="icon-refresh" viewBox="0 0 24 24">
+                <path d="M23 4v6h-6"></path><path d="M1 20v-6h6"></path>
+                <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path>
+            </svg>
+        </button>
     </div>
 
     <div class="controls">
-        <button class="btn-lil" onclick="setFrame(1)">🌸 Floral</button>
-        <button class="btn-min" onclick="setFrame(2)">✨ Minimalista</button>
+        <button class="btn btn-shot" onclick="tirarFoto()"></button>
+        <button id="btnVideo" class="btn btn-video" onclick="alternarGravacao()">
+            <div class="icon-cam-img"></div>
+        </button>
     </div>
 
-    <button class="btn-record" id="recordButton" onclick="toggleRecording()">
-        <span id="recordText">🎬 GRAVAR VÍDEO</span>
-    </button>
+    <div id="preview-screen">
+        <img id="result-img" class="preview-content" style="display:none;">
+        <video id="result-video" class="preview-content" controls loop playsinline style="display:none;"></video>
+        
+        <div class="preview-actions">
+            <button class="btn-action btn-retry" onclick="fecharPreview()">📸 Tirar mais fotos</button>
+            <button class="btn-action btn-save" onclick="salvarMidia()">⬇ Salvar na Galeria</button>
+        </div>
+    </div>
+
+    <canvas id="canvasOutput"></canvas>
 
     <script>
-        const canvas = document.getElementById('videoCanvas');
-        const ctx = canvas.getContext('2d');
-        const recordButton = document.getElementById('recordButton');
-        const recordText = document.getElementById('recordText');
-        const recordIndicator = document.getElementById('record-indicator');
-        
-        // Configurações
-        canvas.width = 1080;
-        canvas.height = 1920;
-        const FPS = 30; // Frames por segundo para a gravação
-        
-        let stream = null;
-        let mediaRecorder = null;
+        // Mapeamento dos elementos DOM
+        const video = document.getElementById('camera');
+        const moldura = document.getElementById('moldura');
+        const canvas = document.getElementById('canvasOutput');
+        const previewScreen = document.getElementById('preview-screen');
+        const resultImg = document.getElementById('result-img');
+        const resultVideo = document.getElementById('result-video');
+        const btnVideo = document.getElementById('btnVideo');
+        const shutterSound = new Audio('https://cdn.pixabay.com/download/audio/2022/03/10/audio_c04f968038.mp3?filename=camera-shutter-click-03-58060.mp3');
+
+        // Variáveis de estado
+        let currentStream;
+        let facingMode = "user"; // Começa com câmera frontal (selfie)
+        let mediaRecorder;
         let recordedChunks = [];
         let isRecording = false;
-        
-        let currentFrame = new Image();
-        const frameSrc1 = 'moldura_lilas.png';       // Moldura 1
-        const frameSrc2 = 'moldura_minimalista.png'; // Moldura 2
-        
-        currentFrame.src = frameSrc1;
+        let mediaBlobUrl = null;
+        let captureType = 'image';
+        let recordedMimeType = ''; 
 
-        // Elemento de vídeo oculto para capturar a câmera
-        const videoElement = document.createElement('video');
-        videoElement.setAttribute('playsinline', ''); 
-        videoElement.play();
-        
         // ---------------------------------------------------------
-        // 1. Lógica de Desenho e Renderização (Vídeo + Moldura)
+        // FUNÇÃO DE TROCA DE MOLDURA (NOVA)
         // ---------------------------------------------------------
-        function draw() {
-            if (!stream) return;
-
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-            
-            // Lógica de "Cover" para preencher a tela com o vídeo da câmera (Selfie)
-            const videoRatio = videoElement.videoWidth / videoElement.videoHeight;
-            const canvasRatio = canvas.width / canvas.height;
-            let drawWidth, drawHeight, startX, startY;
-
-            if (videoRatio > canvasRatio) {
-                drawHeight = canvas.height;
-                drawWidth = drawHeight * videoRatio;
-                startX = (canvas.width - drawWidth) / 2;
-                startY = 0;
-            } else {
-                drawWidth = canvas.width;
-                drawHeight = drawWidth / videoRatio;
-                startX = 0;
-                startY = (canvas.height - drawHeight) / 2;
-            }
-
-            // Espelhamento horizontal (Selfie)
-            ctx.save();
-            ctx.translate(canvas.width, 0);
-            ctx.scale(-1, 1);
-            ctx.drawImage(videoElement, startX, startY, drawWidth, drawHeight);
-            ctx.restore();
-
-            // Desenha a moldura por cima
-            if (currentFrame.complete) {
-                ctx.drawImage(currentFrame, 0, 0, canvas.width, canvas.height);
-            }
-            
-            requestAnimationFrame(draw);
+        function setFrame(src) {
+            moldura.src = src;
         }
 
         // ---------------------------------------------------------
-        // 2. Controle de Câmera e Gravação
+        // Funções Originais (Apenas Limpeza do Código e Ajuste de Nomes)
         // ---------------------------------------------------------
-        async function startCamera() {
-            try {
-                // Pede permissão para Vídeo E Áudio
-                stream = await navigator.mediaDevices.getUserMedia({ 
-                    video: { facingMode: "user", width: { ideal: 1080 }, height: { ideal: 1920 } },
-                    audio: true
-                });
+
+        function iniciarCamera() {
+            if (currentStream) currentStream.getTracks().forEach(track => track.stop());
+            
+            // Requisita vídeo e áudio
+            navigator.mediaDevices.getUserMedia({ 
+                video: { facingMode: facingMode, width: { ideal: 1280 }, height: { ideal: 720 } }, 
+                audio: true 
+            })
+            .then(stream => {
+                currentStream = stream;
+                video.srcObject = stream;
+                video.style.transform = facingMode === "user" ? "scaleX(-1)" : "scaleX(1)"; // Espelha se for selfie
+                desenharNoCanvas();
+            }).catch(err => {
+                console.log("Erro: " + err);
+                alert("Permita câmera e microfone para o filtro funcionar.");
+            });
+        }
+        function virarCamera() { facingMode = facingMode === "user" ? "environment" : "user"; iniciarCamera(); }
+
+        function desenharNoCanvas() {
+            if (video.readyState === video.HAVE_ENOUGH_DATA) {
+                canvas.width = video.videoWidth; canvas.height = video.videoHeight;
+                const ctx = canvas.getContext('2d');
+
+                // 1. APLICA FILTRO DE EMBELEZAMENTO NO VÍDEO (No Canvas)
+                // Usando as configurações CSS que estavam no código de referência:
+                ctx.filter = 'saturate(1.2) brightness(1.1) contrast(1.05) blur(0.5px)';
+
+                ctx.save();
+                if (facingMode === "user") { ctx.translate(canvas.width, 0); ctx.scale(-1, 1); }
+                ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+                ctx.restore();
                 
-                videoElement.srcObject = stream;
-                draw(); // Começa a renderização
-            } catch (err) {
-                alert("Erro ao acessar Câmera ou Microfone: " + err + ". Certifique-se de que as permissões foram concedidas.");
+                // 2. RESETA O FILTRO (Para não borrar a moldura)
+                ctx.filter = 'none';
+                
+                // 3. Desenha a Moldura por cima
+                ctx.drawImage(moldura, 0, 0, canvas.width, canvas.height);
             }
-        }
-        
-        function setFrame(option) {
-            if (option === 1) currentFrame.src = frameSrc1;
-            if (option === 2) currentFrame.src = frameSrc2;
+            requestAnimationFrame(desenharNoCanvas);
         }
 
-        function toggleRecording() {
-            if (!stream) {
-                alert("Câmera não iniciada.");
-                return;
-            }
-            
-            if (!isRecording) {
-                startRecording();
-            } else {
-                stopRecording();
-            }
+        function tirarFoto() {
+            if (isRecording) { alert("Finalize a gravação de vídeo antes de tirar foto."); return; }
+            captureType = 'image'; shutterSound.play().catch(e => {});
+            resultImg.src = canvas.toDataURL('image/png');
+            resultImg.style.display = 'block'; resultVideo.style.display = 'none';
+            previewScreen.style.display = 'flex';
         }
 
-        function startRecording() {
-            // Cria um stream a partir do Canvas (vídeo) e combina com o áudio
-            const canvasStream = canvas.captureStream(FPS);
-            const audioTracks = stream.getAudioTracks();
-            if (audioTracks.length > 0) {
-                canvasStream.addTrack(audioTracks[0]);
-            }
+        function alternarGravacao() { isRecording ? pararGravacao() : iniciarGravacao(); }
 
-            mediaRecorder = new MediaRecorder(canvasStream, { mimeType: 'video/webm; codecs=vp8,opus' });
-            
-            recordedChunks = [];
-            mediaRecorder.ondataavailable = (event) => {
-                if (event.data.size > 0) {
-                    recordedChunks.push(event.data);
+        function iniciarGravacao() {
+            try {
+                const canvasStream = canvas.captureStream(30);
+                const audioTracks = currentStream.getAudioTracks();
+                
+                let combinedStream = canvasStream;
+                if (audioTracks.length > 0) {
+                    combinedStream = new MediaStream([ ...canvasStream.getVideoTracks(), ...audioTracks ]);
                 }
-            };
-            
-            mediaRecorder.onstop = downloadVideo;
-            
-            mediaRecorder.start();
-            isRecording = true;
-            recordButton.classList.add('btn-recording');
-            recordText.textContent = '🛑 PARAR GRAVAÇÃO';
-            recordIndicator.style.display = 'block';
+
+                // Tenta VP9 (melhor qualidade) -> VP8 -> WebM genérico
+                const possibleTypes = [
+                    'video/webm;codecs=vp9,opus', 'video/webm;codecs=vp8,opus',
+                    'video/webm'
+                ];
+
+                let selectedType = '';
+                for (let type of possibleTypes) {
+                    if (MediaRecorder.isTypeSupported(type)) { selectedType = type; break; }
+                }
+                
+                mediaRecorder = new MediaRecorder(combinedStream, { mimeType: selectedType || 'video/webm' });
+                recordedMimeType = mediaRecorder.mimeType;
+
+                recordedChunks = [];
+                mediaRecorder.ondataavailable = (e) => { if (e.data.size > 0) recordedChunks.push(e.data); };
+                mediaRecorder.onstop = () => {
+                    const blob = new Blob(recordedChunks, { type: recordedMimeType });
+                    mediaBlobUrl = URL.createObjectURL(blob);
+                    
+                    captureType = 'video';
+                    resultVideo.src = mediaBlobUrl; 
+                    resultVideo.style.display = 'block'; 
+                    resultImg.style.display = 'none';
+                    previewScreen.style.display = 'flex'; 
+                    resultVideo.muted = false; resultVideo.play();
+                };
+                mediaRecorder.start(); isRecording = true; btnVideo.classList.add('recording');
+            } catch (e) { alert("Erro ao iniciar a gravação: " + e); }
         }
 
-        function stopRecording() {
-            mediaRecorder.stop();
-            isRecording = false;
-            recordButton.classList.remove('btn-recording');
-            recordText.textContent = 'PROCESSANDO...';
-            recordIndicator.style.display = 'none';
+        function pararGravacao() { mediaRecorder.stop(); isRecording = false; btnVideo.classList.remove('recording'); }
+
+        function salvarMidia() {
+            const link = document.createElement('a'); const data = new Date();
+            if (captureType === 'image') { 
+                link.href = resultImg.src; 
+                link.download = `Foto_Casamento_${data.getTime()}.png`; 
+            } else { 
+                link.href = mediaBlobUrl; 
+                let ext = 'webm';
+                if (recordedMimeType.includes('mp4')) { ext = 'mp4'; }
+                link.download = `Video_Casamento_${data.getTime()}.${ext}`; 
+            }
+            document.body.appendChild(link); link.click(); document.body.removeChild(link);
+        }
+        function fecharPreview() { 
+            previewScreen.style.display = 'none'; 
+            if (resultVideo.src) { resultVideo.pause(); URL.revokeObjectURL(mediaBlobUrl); }
+            mediaBlobUrl = null; 
         }
 
-        function downloadVideo() {
-            recordText.textContent = '🎬 GRAVAR VÍDEO';
-            const blob = new Blob(recordedChunks, { type: 'video/webm' });
-            const url = URL.createObjectURL(blob);
-            
-            const a = document.createElement('a');
-            a.style.display = 'none';
-            a.href = url;
-            a.download = 'video_casamento_' + Date.now() + '.webm';
-            document.body.appendChild(a);
-            a.click();
-            
-            window.URL.revokeObjectURL(url);
-        }
-
-        // Inicia a câmera ao carregar a página
-        startCamera();
+        window.addEventListener('load', iniciarCamera);
     </script>
 </body>
 </html>
