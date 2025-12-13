@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Filtro Foto V14 - Final</title>
+    <title>Filtro Foto V15 - Botões Baixos</title>
     
     <style>
         /* --- RESET --- */
@@ -21,18 +21,27 @@
             object-fit: cover; z-index: 1; 
         }
 
-        /* --- CONTROLES --- */
+        /* --- CONTROLES (POSIÇÃO AJUSTADA) --- */
         .controls-area {
-            position: fixed; bottom: 0; left: 0; width: 100%; z-index: 9999; 
-            padding-bottom: 30px; padding-top: 20px;
-            background: linear-gradient(to top, rgba(0,0,0,0.7), transparent);
-            display: flex; justify-content: center;
+            position: fixed; 
+            bottom: 0; left: 0; width: 100%; 
+            z-index: 9999; 
+            
+            /* AQUI: Diminuí de 30px/40px para 10px para baixar os botões */
+            padding-bottom: 10px; 
+            padding-top: 40px; /* Mais degradê para cima */
+            
+            /* Degradê mais forte na base para leitura */
+            background: linear-gradient(to top, rgba(0,0,0,0.8) 0%, rgba(0,0,0,0) 100%);
+            
+            display: flex; justify-content: center; align-items: flex-end; /* Alinha no fundo */
         }
         
-        /* Ajuste do espaçamento para o novo layout com menos botões */
         .main-action-line {
             display: flex; justify-content: center; align-items: center;
-            gap: 15px; width: 100%; max-width: 400px;
+            gap: 12px; /* Botões próximos */
+            width: 100%; max-width: 400px;
+            margin-bottom: 10px; /* Margem de segurança para o toque */
         }
 
         /* --- BOTÕES GERAIS --- */
@@ -41,33 +50,34 @@
 
         /* Botão Lateral (Virar) */
         .btn-round {
-            width: 44px; height: 44px; border-radius: 50%;
-            background-color: rgba(0, 0, 0, 0.4); 
-            border: 1px solid rgba(255, 255, 255, 0.6);
+            width: 42px; height: 42px; border-radius: 50%;
+            background-color: rgba(0, 0, 0, 0.3); 
+            border: 1px solid rgba(255, 255, 255, 0.5);
             display: flex; justify-content: center; align-items: center;
             backdrop-filter: blur(4px);
         }
         .icon-svg { width: 22px; height: 22px; fill: white; }
 
-        /* Botões de Filtro (Pílulas Neutras) */
+        /* Botões de Filtro (Pílulas) */
         .btn-filter {
-            padding: 8px 14px; border-radius: 20px; border: none;
+            padding: 8px 12px; border-radius: 20px; border: none;
             font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px;
             box-shadow: 0 2px 4px rgba(0,0,0,0.3);
             background: rgba(255, 255, 255, 0.9); color: #000;
         }
 
-        /* --- BOTÃO PRINCIPAL (DISPARADOR DE FOTO) --- */
+        /* --- BOTÃO PRINCIPAL (DISPARADOR FOTO) --- */
         .btn-shot-container {
-            width: 75px; height: 75px; border-radius: 50%;
+            width: 72px; height: 72px; border-radius: 50%;
             border: 4px solid white; 
             background: transparent;
             display: flex; justify-content: center; align-items: center;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+            box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+            margin: 0 5px;
         }
         
         .btn-shot-inner {
-            width: 63px; height: 63px; border-radius: 50%;
+            width: 60px; height: 60px; border-radius: 50%;
             background: white; 
             display: flex; justify-content: center; align-items: center;
         }
@@ -81,10 +91,11 @@
             flex-direction: column; align-items: center; justify-content: center;
         }
         .preview-content { 
-            max-width: 90%; max-height: 70%; 
+            max-width: 90%; max-height: 75%; /* Aumentei a área da foto no preview */
             border-radius: 12px; margin-bottom: 20px; 
             box-shadow: 0 4px 20px rgba(0,0,0,0.5);
             background: #000;
+            object-fit: contain;
         }
         /* Botões de Preview */
         .preview-actions { display: flex; flex-direction: column; gap: 10px; width: 85%; }
@@ -94,9 +105,9 @@
             display: flex; justify-content: center; align-items: center; gap: 8px;
             text-transform: uppercase;
         }
-        .btn-save { background: #007AFF; } /* Azul */
-        .btn-share { background: #34C759; } /* Verde */
-        .btn-back { background: #3a3a3c; } /* Cinza */
+        .btn-save { background: #007AFF; } /* Azul iOS */
+        .btn-share { background: #34C759; } /* Verde WhatsApp */
+        .btn-back { background: #3a3a3c; } /* Cinza Escuro */
 
         #status-msg {
             position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
@@ -107,7 +118,7 @@
 </head>
 <body>
 
-    <div id="status-msg">Iniciando câmera...</div>
+    <div id="status-msg">Carregando...</div>
 
     <video id="camera" playsinline muted></video>
     <img id="moldura-source" src="moldura_lilas.png" style="display:none;">
@@ -123,7 +134,7 @@
 
             <button class="btn btn-filter" onclick="setFrame('moldura_lilas.png')">Filtro 1</button>
 
-            <div class="btn btn-shot-container btn" onclick="takePhoto()">
+            <div class="btn btn-shot-container" onclick="takePhoto()">
                 <div class="btn-shot-inner">
                     <svg class="icon-camera-center" viewBox="0 0 24 24">
                         <path d="M20 5h-3.17L15 3H9L7.17 5H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 14H4V7h4.05l1.83-2h4.24l1.83 2H20v12zM12 9c-2.76 0-5 2.24-5 5s2.24 5 5 5 5-2.24 5-5-2.24-5-5-5zm0 8c-1.66 0-3-1.34-3-3s1.34-3 3-3 3 1.34 3 3-1.34 3-3 3z"/>
@@ -157,14 +168,14 @@
         let facingMode = "user"; 
         let finalFile = null;
 
-        // --- INICIALIZAÇÃO ---
+        // INICIAR
         async function startCamera() {
             try {
                 if (localStream) {
                     localStream.getTracks().forEach(t => t.stop());
                 }
                 
-                // Apenas vídeo agora, sem áudio
+                // Apenas vídeo
                 localStream = await navigator.mediaDevices.getUserMedia({
                     video: { facingMode: facingMode, width: { ideal: 1280 }, height: { ideal: 720 } }
                 });
@@ -197,7 +208,7 @@
             requestAnimationFrame(drawFrame);
         }
 
-        // --- CONTROLES ---
+        // CONTROLES
         function virarCamera() {
             facingMode = facingMode === "user" ? "environment" : "user";
             startCamera();
@@ -207,24 +218,25 @@
             moldura.src = src;
         }
 
-        // --- FOTO ---
+        // FOTO
         function takePhoto() {
-            // Efeito visual de flash
-            canvas.style.opacity = '0.5';
-            setTimeout(() => canvas.style.opacity = '1', 100);
+            // Flash visual
+            const flash = document.createElement('div');
+            flash.style.cssText = "position:fixed;top:0;left:0;width:100%;height:100%;background:white;z-index:99999;opacity:0.8;";
+            document.body.appendChild(flash);
+            setTimeout(() => document.body.removeChild(flash), 100);
 
             canvas.toBlob(blob => {
-                // Cria nome de arquivo único com data/hora
                 const date = new Date();
                 const fileName = `foto_${date.getTime()}.png`;
                 finalFile = new File([blob], fileName, { type: "image/png" });
                 
                 document.getElementById('result-img').src = URL.createObjectURL(blob);
                 document.getElementById('preview-screen').style.display = 'flex';
-            }, 'image/png', 1.0); // Qualidade máxima
+            }, 'image/png', 1.0);
         }
 
-        // --- PREVIEW E SHARE ---
+        // PREVIEW
         function fecharPreview() {
             document.getElementById('preview-screen').style.display = 'none';
         }
@@ -237,7 +249,6 @@
             a.click();
         }
 
-        // Compartilhamento (Funciona bem para imagens)
         async function compartilharMidia() {
             if (!finalFile) return;
             
@@ -249,19 +260,17 @@
                         text: 'Confira minha foto!'
                     });
                 } catch (err) {
-                    console.log("Compartilhamento cancelado ou erro: " + err);
+                    // Ignora se o usuário cancelar
                 }
             } else {
                 alert("Seu navegador não suporta compartilhamento direto. Use o botão Salvar.");
             }
         }
 
-        // Inicia
         document.body.addEventListener('click', () => { 
             if (!localStream) startCamera(); 
         });
         window.onload = startCamera;
-
     </script>
 </body>
 </html>
