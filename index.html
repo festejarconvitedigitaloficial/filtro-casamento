@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Filtro Casamento V8 - Com Áudio</title>
+    <title>Filtro Casamento V9 - Final</title>
     
     <style>
         /* --- RESET GERAL --- */
@@ -124,7 +124,7 @@
 </head>
 <body>
 
-    <div id="status-msg">Toque na tela para iniciar...</div>
+    <div id="status-msg">Iniciando câmera...</div>
 
     <video id="camera" playsinline muted></video>
     <img id="moldura-source" src="moldura_lilas.png" style="display:none;">
@@ -136,7 +136,7 @@
             
             <button class="btn btn-round" onclick="virarCamera()">
                 <svg class="icon-svg" viewBox="0 0 24 24">
-                    <path d="M20 4h-3.17L15 2H9L7.17 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm-5 11.5V13H9v2.5L5.5 12 9 8.5V11h6V8.5l3.5 3.5-3.5 3.5z"/>
+                    <path d="M12 4V1L8 5l4 4V6c3.31 0 6 2.69 6 6 0 1.01-.25 1.97-.7 2.8l1.46 1.46C19.54 15.03 20 13.57 20 12c0-4.42-3.58-8-8-8zm0 14c-3.31 0-6-2.69-6-6 0-1.01.25-1.97.7-2.8L5.24 7.74C4.46 8.97 4 10.43 4 12c0 4.42 3.58 8 8 8v3l4-4-4-4v3z"/>
                 </svg>
             </button>
 
@@ -186,10 +186,10 @@
             try {
                 if (stream) stream.getTracks().forEach(t => t.stop());
                 
-                // Solicita ÁUDIO e VÍDEO
+                // Solicita ÁUDIO e VÍDEO juntos
                 stream = await navigator.mediaDevices.getUserMedia({
                     video: { facingMode: facingMode, width: { ideal: 1280 }, height: { ideal: 720 } },
-                    audio: true
+                    audio: true 
                 });
 
                 video.srcObject = stream;
@@ -198,7 +198,7 @@
                 statusMsg.style.display = 'none';
                 drawFrame(); 
             } catch (err) {
-                statusMsg.innerHTML = "Erro ao acessar câmera/microfone: " + err.message;
+                statusMsg.innerHTML = "Erro: " + err.message + ". <br>Ative as permissões de câmera/áudio no navegador.";
             }
         }
 
@@ -256,39 +256,54 @@
             });
         }
 
-        // --- VÍDEO COM ÁUDIO ---
+        // --- VÍDEO (LÓGICA CORRIGIDA PARA WHATSAPP) ---
         function startRecording() {
-            // 1. Pega o vídeo do canvas (o filtro)
+            // 1. Pega o vídeo do canvas
             const canvasStream = canvas.captureStream(30);
             
-            // 2. Pega o áudio do stream original do microfone
+            // 2. Pega o áudio do microfone
             const audioTracks = stream.getAudioTracks();
             
-            // 3. Junta os dois (Vídeo do Canvas + Áudio do Mic)
-            let combinedStream;
-            if (audioTracks.length > 0) {
-                combinedStream = new MediaStream([...canvasStream.getVideoTracks(), ...audioTracks]);
-            } else {
-                combinedStream = canvasStream; // Se não tiver áudio, grava mudo mesmo
+            if (audioTracks.length === 0) {
+                alert("Aviso: Microfone não detectado. O vídeo ficará sem som.");
             }
 
-            // 4. Configura formato para WhatsApp
-            let options = { mimeType: 'video/webm' };
+            // 3. Combina Canvas + Mic
+            let combinedStream = new MediaStream([...canvasStream.getVideoTracks(), ...audioTracks]);
+
+            // 4. Seleção de Formato Prioritária para WhatsApp
+            let mimeType = 'video/webm'; // Padrão genérico
+            
+            // Verifica suporte na ordem de preferência do WhatsApp
             if (MediaRecorder.isTypeSupported('video/mp4')) {
-                options = { mimeType: 'video/mp4', videoBitsPerSecond: 2500000 };
+                mimeType = 'video/mp4';
             } else if (MediaRecorder.isTypeSupported('video/webm;codecs=h264')) {
-                options = { mimeType: 'video/webm;codecs=h264', videoBitsPerSecond: 2500000 };
+                mimeType = 'video/webm;codecs=h264';
+            } else if (MediaRecorder.isTypeSupported('video/webm;codecs=vp9')) {
+                mimeType = 'video/webm;codecs=vp9';
             }
 
-            mediaRecorder = new MediaRecorder(combinedStream, options);
+            let options = { mimeType: mimeType };
+
+            try {
+                mediaRecorder = new MediaRecorder(combinedStream, options);
+            } catch (e) {
+                // Fallback se a opção falhar
+                mediaRecorder = new MediaRecorder(combinedStream);
+            }
+            
             chunks = [];
             
             mediaRecorder.ondataavailable = e => { if (e.data.size > 0) chunks.push(e.data); };
             
             mediaRecorder.onstop = () => {
-                const blob = new Blob(chunks, { type: options.mimeType });
-                let ext = options.mimeType.includes('mp4') ? 'mp4' : 'webm';
-                finalFile = new File([blob], `video_casamento.${ext}`, { type: options.mimeType });
+                const blob = new Blob(chunks, { type: mediaRecorder.mimeType });
+                
+                // Força extensão .mp4 se o navegador permitir, senão .webm
+                let ext = 'webm';
+                if (mediaRecorder.mimeType.includes('mp4')) ext = 'mp4';
+                
+                finalFile = new File([blob], `video_casamento.${ext}`, { type: mediaRecorder.mimeType });
                 
                 const vidUrl = URL.createObjectURL(blob);
                 const vid = document.getElementById('result-video');
@@ -315,9 +330,8 @@
             const vid = document.getElementById('result-video');
             vid.style.display = type === 'video' ? 'block' : 'none';
             
-            // Tenta reproduzir com som
             if (type === 'video') {
-                vid.muted = false;
+                vid.muted = false; // Garante que não esteja mudo no preview
                 vid.volume = 1.0;
                 vid.play();
             }
@@ -344,9 +358,9 @@
                         title: 'Filtro Casamento',
                         text: 'Olha que legal!'
                     });
-                } catch (err) { console.log("Compartilhamento cancelado ou erro: " + err); }
+                } catch (err) { console.log("Erro share: " + err); }
             } else {
-                alert("Use o botão de Salvar e envie pelo WhatsApp manualmente.");
+                alert("Use o botão 'Salvar na Galeria' e envie manualmente pelo WhatsApp.");
             }
         }
 
