@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Filtro Final V13</title>
+    <title>Filtro Foto V14 - Final</title>
     
     <style>
         /* --- RESET --- */
@@ -25,72 +25,54 @@
         .controls-area {
             position: fixed; bottom: 0; left: 0; width: 100%; z-index: 9999; 
             padding-bottom: 30px; padding-top: 20px;
-            background: linear-gradient(to top, rgba(0,0,0,0.8), transparent);
+            background: linear-gradient(to top, rgba(0,0,0,0.7), transparent);
             display: flex; justify-content: center;
         }
         
-        /* AQUI: Diminuí o GAP para 8px para aproximar os botões */
+        /* Ajuste do espaçamento para o novo layout com menos botões */
         .main-action-line {
             display: flex; justify-content: center; align-items: center;
-            gap: 8px; /* Botões bem próximos */
-            width: 100%;
+            gap: 15px; width: 100%; max-width: 400px;
         }
 
         /* --- BOTÕES GERAIS --- */
         .btn { cursor: pointer; transition: transform 0.2s; }
         .btn:active { transform: scale(0.95); }
 
-        /* Botões Laterais (Redondos e Neutros) */
+        /* Botão Lateral (Virar) */
         .btn-round {
-            width: 44px; height: 44px; border-radius: 50%; /* Um pouco menores */
+            width: 44px; height: 44px; border-radius: 50%;
             background-color: rgba(0, 0, 0, 0.4); 
             border: 1px solid rgba(255, 255, 255, 0.6);
             display: flex; justify-content: center; align-items: center;
             backdrop-filter: blur(4px);
         }
         .icon-svg { width: 22px; height: 22px; fill: white; }
-        
-        .video-active { background-color: white !important; }
-        .video-active .icon-svg { fill: black !important; }
 
-        /* Botões de Filtro (Pílulas) */
+        /* Botões de Filtro (Pílulas Neutras) */
         .btn-filter {
-            padding: 8px 12px; border-radius: 20px; border: none;
+            padding: 8px 14px; border-radius: 20px; border: none;
             font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px;
             box-shadow: 0 2px 4px rgba(0,0,0,0.3);
             background: rgba(255, 255, 255, 0.9); color: #000;
         }
 
-        /* --- BOTÃO PRINCIPAL (DISPARO) --- */
-        .btn-shot-border {
+        /* --- BOTÃO PRINCIPAL (DISPARADOR DE FOTO) --- */
+        .btn-shot-container {
             width: 75px; height: 75px; border-radius: 50%;
             border: 4px solid white; 
             background: transparent;
             display: flex; justify-content: center; align-items: center;
-            position: relative;
             box-shadow: 0 4px 15px rgba(0,0,0,0.3);
-            margin: 0 5px; /* Margem extra só no central */
         }
         
         .btn-shot-inner {
             width: 63px; height: 63px; border-radius: 50%;
             background: white; 
             display: flex; justify-content: center; align-items: center;
-            transition: all 0.3s ease;
         }
 
-        .icon-camera-center {
-            width: 28px; height: 28px; fill: #111;
-            transition: opacity 0.2s;
-        }
-
-        /* Estado Gravando */
-        .recording .btn-shot-inner {
-            width: 32px; height: 32px; border-radius: 6px; 
-            background: #ff3b30; 
-        }
-        .recording .icon-camera-center { opacity: 0; }
-        .recording { border-color: rgba(255,255,255,0.6); }
+        .icon-camera-center { width: 28px; height: 28px; fill: #111; }
 
         /* --- PREVIEW --- */
         #preview-screen {
@@ -104,21 +86,17 @@
             box-shadow: 0 4px 20px rgba(0,0,0,0.5);
             background: #000;
         }
-        /* Botões de Preview lado a lado */
-        .preview-actions { display: flex; gap: 15px; width: 90%; justify-content: center; }
+        /* Botões de Preview */
+        .preview-actions { display: flex; flex-direction: column; gap: 10px; width: 85%; }
         .btn-action {
-            padding: 15px; border-radius: 50px; border: none;
+            padding: 15px; border-radius: 12px; border: none;
             font-weight: 600; font-size: 14px; color: white; width: 100%;
             display: flex; justify-content: center; align-items: center; gap: 8px;
             text-transform: uppercase;
         }
-        .btn-save { background: #007AFF; } /* Azul para salvar */
-        .btn-back { background: #3a3a3c; } /* Cinza para voltar */
-
-        /* Aviso de dica */
-        .tip-text {
-            color: #aaa; font-size: 12px; margin-top: 15px; text-align: center; max-width: 80%;
-        }
+        .btn-save { background: #007AFF; } /* Azul */
+        .btn-share { background: #34C759; } /* Verde */
+        .btn-back { background: #3a3a3c; } /* Cinza */
 
         #status-msg {
             position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
@@ -129,7 +107,7 @@
 </head>
 <body>
 
-    <div id="status-msg">Iniciando...<br>Permita o uso da Câmera e Microfone</div>
+    <div id="status-msg">Iniciando câmera...</div>
 
     <video id="camera" playsinline muted></video>
     <img id="moldura-source" src="moldura_lilas.png" style="display:none;">
@@ -145,7 +123,7 @@
 
             <button class="btn btn-filter" onclick="setFrame('moldura_lilas.png')">Filtro 1</button>
 
-            <div id="btnShot" class="btn btn-shot-border" onclick="handleShot()">
+            <div class="btn btn-shot-container btn" onclick="takePhoto()">
                 <div class="btn-shot-inner">
                     <svg class="icon-camera-center" viewBox="0 0 24 24">
                         <path d="M20 5h-3.17L15 3H9L7.17 5H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 14H4V7h4.05l1.83-2h4.24l1.83 2H20v12zM12 9c-2.76 0-5 2.24-5 5s2.24 5 5 5 5-2.24 5-5-2.24-5-5-5zm0 8c-1.66 0-3-1.34-3-3s1.34-3 3-3 3 1.34 3 3-1.34 3-3 3z"/>
@@ -155,22 +133,17 @@
 
             <button class="btn btn-filter" onclick="setFrame('moldura_minimalista.png')">Filtro 2</button>
 
-            <button id="btnMode" class="btn btn-round" onclick="toggleMode()">
-                <svg class="icon-svg" viewBox="0 0 24 24"><path d="M17 10.5V7c0-.55-.45-1-1-1H4c-.55 0-1 .45-1 1v10c0 .55.45 1 1 1h12c.55 0 1-.45 1-1v-3.5l4 4v-11l-4 4z"/></svg>
-            </button>
-
         </div>
     </div>
 
     <div id="preview-screen">
-        <img id="result-img" class="preview-content" style="display:none;">
-        <video id="result-video" class="preview-content" controls loop playsinline style="display:none;"></video>
+        <img id="result-img" class="preview-content">
         
         <div class="preview-actions">
-            <button class="btn-action btn-back" onclick="fecharPreview()">↺ Voltar</button>
             <button class="btn-action btn-save" onclick="salvarMidia()">⬇ Salvar na Galeria</button>
+            <button class="btn-action btn-share" onclick="compartilharMidia()">➤ Compartilhar</button>
+            <button class="btn-action btn-back" onclick="fecharPreview()">↺ Voltar</button>
         </div>
-        <div class="tip-text">Dica: Para postar no Instagram ou WhatsApp, salve na galeria primeiro.</div>
     </div>
 
     <script>
@@ -182,10 +155,6 @@
         
         let localStream = null;
         let facingMode = "user"; 
-        let isVideoMode = false;
-        let isRecording = false;
-        let mediaRecorder = null;
-        let chunks = [];
         let finalFile = null;
 
         // --- INICIALIZAÇÃO ---
@@ -195,10 +164,9 @@
                     localStream.getTracks().forEach(t => t.stop());
                 }
                 
-                // Configuração robusta para áudio
+                // Apenas vídeo agora, sem áudio
                 localStream = await navigator.mediaDevices.getUserMedia({
-                    video: { facingMode: facingMode, width: { ideal: 1280 }, height: { ideal: 720 } },
-                    audio: { echoCancellation: true, noiseSuppression: true }
+                    video: { facingMode: facingMode, width: { ideal: 1280 }, height: { ideal: 720 } }
                 });
 
                 video.srcObject = localStream;
@@ -207,7 +175,7 @@
                 statusMsg.style.display = 'none';
                 drawFrame(); 
             } catch (err) {
-                statusMsg.innerHTML = "Erro: " + err.message + "<br>Verifique permissões de Câmera/Microfone.";
+                statusMsg.innerHTML = "Erro: " + err.message + "<br>Verifique permissão da Câmera.";
             }
         }
 
@@ -239,109 +207,26 @@
             moldura.src = src;
         }
 
-        function toggleMode() {
-            isVideoMode = !isVideoMode;
-            document.getElementById('btnMode').classList.toggle('video-active');
-            
-            const innerBtn = document.querySelector('.btn-shot-inner');
-            if (isVideoMode) {
-                innerBtn.style.backgroundColor = '#ff3b30'; 
-                innerBtn.style.transform = 'scale(0.8)';
-            } else {
-                innerBtn.style.backgroundColor = 'white';
-                innerBtn.style.transform = 'scale(1)';
-            }
-        }
-
-        function handleShot() {
-            if (isVideoMode) {
-                if (isRecording) stopRecording();
-                else startRecording();
-            } else {
-                takePhoto();
-            }
-        }
-
         // --- FOTO ---
         function takePhoto() {
+            // Efeito visual de flash
             canvas.style.opacity = '0.5';
             setTimeout(() => canvas.style.opacity = '1', 100);
 
             canvas.toBlob(blob => {
-                finalFile = new File([blob], "foto.png", { type: "image/png" });
+                // Cria nome de arquivo único com data/hora
+                const date = new Date();
+                const fileName = `foto_${date.getTime()}.png`;
+                finalFile = new File([blob], fileName, { type: "image/png" });
+                
                 document.getElementById('result-img').src = URL.createObjectURL(blob);
-                showPreview('image');
-            }, 'image/png');
+                document.getElementById('preview-screen').style.display = 'flex';
+            }, 'image/png', 1.0); // Qualidade máxima
         }
 
-        // --- VÍDEO ---
-        function startRecording() {
-            const canvasStream = canvas.captureStream(30);
-            const audioTracks = localStream.getAudioTracks();
-            
-            if (audioTracks.length === 0) {
-                console.warn("Sem microfone detectado.");
-            }
-
-            const combinedStream = new MediaStream([...canvasStream.getVideoTracks(), ...audioTracks]);
-
-            // Opções para maximizar compatibilidade de gravação
-            let options = { mimeType: 'video/webm' };
-            // Tenta forçar bitrate de áudio
-            if (MediaRecorder.isTypeSupported('video/webm;codecs=vp8,opus')) {
-                options = { mimeType: 'video/webm;codecs=vp8,opus', audioBitsPerSecond: 128000 };
-            }
-
-            try {
-                mediaRecorder = new MediaRecorder(combinedStream, options);
-            } catch (e) {
-                mediaRecorder = new MediaRecorder(combinedStream);
-            }
-
-            chunks = [];
-            mediaRecorder.ondataavailable = e => { if (e.data.size > 0) chunks.push(e.data); };
-            
-            mediaRecorder.onstop = () => {
-                const blob = new Blob(chunks, { type: mediaRecorder.mimeType });
-                
-                // Salva como .webm (que o Android gera)
-                // O usuário DEVE salvar na galeria para o celular converter
-                finalFile = new File([blob], `video_filtro.webm`, { type: mediaRecorder.mimeType });
-                
-                const vidUrl = URL.createObjectURL(blob);
-                const vid = document.getElementById('result-video');
-                vid.src = vidUrl;
-                showPreview('video');
-            };
-
-            mediaRecorder.start();
-            isRecording = true;
-            document.getElementById('btnShot').classList.add('recording');
-        }
-
-        function stopRecording() {
-            mediaRecorder.stop();
-            isRecording = false;
-            document.getElementById('btnShot').classList.remove('recording');
-        }
-
-        // --- PREVIEW ---
-        function showPreview(type) {
-            document.getElementById('preview-screen').style.display = 'flex';
-            document.getElementById('result-img').style.display = type === 'image' ? 'block' : 'none';
-            const vid = document.getElementById('result-video');
-            vid.style.display = type === 'video' ? 'block' : 'none';
-            
-            if (type === 'video') {
-                vid.muted = false; // Garante som
-                vid.volume = 1.0;
-                vid.play();
-            }
-        }
-
+        // --- PREVIEW E SHARE ---
         function fecharPreview() {
             document.getElementById('preview-screen').style.display = 'none';
-            document.getElementById('result-video').pause();
         }
 
         function salvarMidia() {
@@ -350,6 +235,25 @@
             a.href = URL.createObjectURL(finalFile);
             a.download = finalFile.name;
             a.click();
+        }
+
+        // Compartilhamento (Funciona bem para imagens)
+        async function compartilharMidia() {
+            if (!finalFile) return;
+            
+            if (navigator.canShare && navigator.canShare({ files: [finalFile] })) {
+                try {
+                    await navigator.share({
+                        files: [finalFile],
+                        title: 'Foto com Filtro',
+                        text: 'Confira minha foto!'
+                    });
+                } catch (err) {
+                    console.log("Compartilhamento cancelado ou erro: " + err);
+                }
+            } else {
+                alert("Seu navegador não suporta compartilhamento direto. Use o botão Salvar.");
+            }
         }
 
         // Inicia
