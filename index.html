@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Filtro Vídeo Casamento - Final</title>
+    <title>Filtro Vídeo Casamento - V5</title>
     
     <style>
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
@@ -22,27 +22,14 @@
         .controls-area {
             position: absolute; bottom: 0; left: 0; width: 100%;
             display: flex; flex-direction: column; align-items: center;
-            padding-bottom: 5px; z-index: 999;
-            /* Fundo esbranquiçado sutil da base do celular (como no print) */
-            background-color: rgba(255, 255, 255, 0.9);
+            padding-bottom: 25px; z-index: 999;
+            background: linear-gradient(to top, rgba(0,0,0,0.8), rgba(0,0,0,0));
         }
 
-        /* LINHA 1: Botões de Ação (Câmera/Vídeo/Flip) - FLUTUAM acima da Linha 2 */
-        .action-buttons {
+        /* LINHA PRINCIPAL: Ações e Filtros no centro */
+        .main-action-line {
             display: flex; justify-content: center; align-items: center;
-            gap: 20px; 
-            /* Margem Negativa para subir e "flutuar" sobre a linha de filtros */
-            margin-bottom: -30px; 
-            padding: 10px 0;
-            width: 100%;
-        }
-
-        /* LINHA 2: Botões de Filtro (embaixo, com rolagem/setas se necessário) */
-        .filter-buttons {
-            display: flex; justify-content: center; gap: 10px;
-            padding: 15px 10px;
-            width: 100%;
-            overflow-x: auto; /* Permite rolagem horizontal se tiver muitos */
+            gap: 10px; /* Espaçamento entre os elementos */
         }
         
         .btn { cursor: pointer; transition: transform 0.1s; box-shadow: 0 4px 10px rgba(0,0,0,0.5); }
@@ -50,11 +37,12 @@
 
         /* Estilo dos Botões de TROCA DE MOLDURA (FILTRO 1, FILTRO 2) */
         .btn-filter {
-            padding: 8px 15px; border-radius: 50px; border: none;
+            padding: 8px 12px; /* Diminuído */
+            border-radius: 50px; border: none;
             font-size: 13px; font-weight: 600; text-transform: uppercase;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
-            white-space: nowrap; /* Impede quebras de linha */
-            flex-shrink: 0;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.4);
+            transition: all 0.3s ease;
+            white-space: nowrap;
         }
 
         /* Botão 1: FILTRO 1 (Lilás) */
@@ -64,39 +52,37 @@
 
         /* BOTÃO TIRAR FOTO (Centro) - Dourado */
         .btn-shot {
-            width: 80px; height: 80px;
+            width: 70px; height: 70px; /* Diminuído */
             background: radial-gradient(circle, #fcf6ba 20%, #bf953f 60%, #a37c35 100%);
             border: 4px solid #4a3b10; border-radius: 50%;
             box-shadow: 0 0 15px rgba(255, 223, 0, 0.5);
-            /* Ícone de Câmera - Cor BRANCA (Voltando ao original da imagem) */
-            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='white'%3E%3Cpath d='M20 5h-3.17L15 3H9L7.17 5H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 14H4V7h4.05l1.83-2h4.24l1.83 2H20v12zM12 9c-2.76 0-5 2.24-5 5s2.24 5 5 5 5-2.24 5-5-2.24-5-5-5zm0 8c-1.66 0-3-1.34-3-3s1.34-3 3-3 3 1.34 3 3-1.34 3-3 3z'/%3E%3C/svg%3E");
+            /* Ícone de Câmera - Cor PRETA */
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='black'%3E%3Cpath d='M20 5h-3.17L15 3H9L7.17 5H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 14H4V7h4.05l1.83-2h4.24l1.83 2H20v12zM12 9c-2.76 0-5 2.24-5 5s2.24 5 5 5 5-2.24 5-5-2.24-5-5-5zm0 8c-1.66 0-3-1.34-3-3s1.34-3 3-3 3 1.34 3 3-1.34 3-3 3z'/%3E%3C/svg%3E");
             background-size: 50%; background-position: center; background-repeat: no-repeat;
         }
 
-        /* BOTÃO VÍDEO (Filmadora) */
+        /* BOTÃO VÍDEO (Filmadora) - Agora à direita, ao lado do Flip */
         .btn-video {
-            width: 65px; height: 65px;
+            width: 60px; height: 60px;
             background: #c0392b; 
             border: 3px solid white; border-radius: 50%;
             display: flex; justify-content: center; align-items: center;
         }
         .icon-cam-img {
             width: 30px; height: 30px;
+            /* Ícone de Filmadora (Vídeo) */
             background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='white'%3E%3Cpath d='M17 10.5V7c0-.55-.45-1-1-1H4c-.55 0-1 .45-1 1v10c0 .55.45 1 1 1h12c.55 0 1-.45 1-1v-3.5l4 4v-11l-4 4z'/%3E%3C/svg%3E");
             background-repeat: no-repeat; background-position: center;
         }
 
-        /* BOTÃO VIRAR CÂMERA */
+        /* BOTÃO VIRAR CÂMERA (Agora à esquerda, ao lado do Vídeo) */
         .btn-flip {
-            width: 50px; height: 50px;
-            background: rgba(0, 0, 0, 0.4); /* Fundo escuro sutil para contraste */
+            width: 60px; height: 60px; /* Mesmo tamanho do vídeo para alinhamento */
+            background: rgba(255, 255, 255, 0.2); 
             border: 1px solid white; border-radius: 50%; 
             display: flex; justify-content: center; align-items: center;
         }
-        .icon-refresh {
-            width: 25px; height: 25px;
-            fill: none; stroke: white; stroke-width: 3; stroke-linecap: round; stroke-linejoin: round;
-        }
+        .icon-refresh { width: 25px; height: 25px; fill: none; stroke: white; stroke-width: 3; }
         
         /* Estilo GRAVANDO */
         .recording {
@@ -104,14 +90,8 @@
             background-color: white !important;
             border: 3px solid #c0392b !important;
         }
-        .recording .icon-cam-img {
-            background-image: none; background-color: #c0392b;
-            width: 24px; height: 24px; border-radius: 4px;
-        }
 
-        @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.05); } 100% { transform: scale(1); } }
-
-        /* PREVIEW - Mantido o design */
+        /* PREVIEW - Mantido */
         #preview-screen {
             display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: #000; z-index: 10000;
@@ -126,27 +106,26 @@
 
     <div class="controls-area">
         
-        <div class="action-buttons">
-            <button class="btn btn-flip" onclick="virarCamera()">
+        <div class="main-action-line" style="margin-bottom: 25px;">
+             <button class="btn btn-flip" onclick="virarCamera()">
                 <svg class="icon-refresh" viewBox="0 0 24 24">
                     <path d="M23 4v6h-6"></path><path d="M1 20v-6h6"></path>
                     <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path>
                 </svg>
             </button>
-            
-            <button class="btn btn-shot" onclick="tirarFoto()"></button>
-            
-            <button id="btnVideo" class="btn btn-video" onclick="alternarGravacao()">
+             <button id="btnVideo" class="btn btn-video" onclick="alternarGravacao()">
                 <div class="icon-cam-img"></div>
             </button>
         </div>
 
-        <div class="filter-buttons">
-            <button class="btn-filter btn-lil" onclick="setFrame('moldura_lilas.png')">BTI-LIIL</button>
+        <div class="main-action-line">
+            <button class="btn-filter btn-lil" onclick="setFrame('moldura_lilas.png')">FILTRO 1</button>
+            
+            <button class="btn btn-shot" onclick="tirarFoto()"></button>
+            
             <button class="btn-filter btn-min" onclick="setFrame('moldura_minimalista.png')">FILTRO 2</button>
-            <button class="btn-filter btn-min" onclick="setFrame('moldura_extra_1.png')">GRAVIDEO</button>
-            <button class="btn-filter btn-min" onclick="setFrame('moldura_extra_2.png')">&lt;&lt;</button>
-             </div>
+        </div>
+        
     </div>
 
     <div id="preview-screen">
