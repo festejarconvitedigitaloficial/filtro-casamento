@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Filtro Final V12</title>
+    <title>Filtro Final V13</title>
     
     <style>
         /* --- RESET --- */
@@ -24,70 +24,72 @@
         /* --- CONTROLES --- */
         .controls-area {
             position: fixed; bottom: 0; left: 0; width: 100%; z-index: 9999; 
-            padding-bottom: 40px; padding-top: 20px;
-            background: linear-gradient(to top, rgba(0,0,0,0.7), transparent);
+            padding-bottom: 30px; padding-top: 20px;
+            background: linear-gradient(to top, rgba(0,0,0,0.8), transparent);
             display: flex; justify-content: center;
         }
+        
+        /* AQUI: Diminuí o GAP para 8px para aproximar os botões */
         .main-action-line {
             display: flex; justify-content: center; align-items: center;
-            gap: 20px; width: 100%;
+            gap: 8px; /* Botões bem próximos */
+            width: 100%;
         }
 
-        /* --- BOTÕES --- */
+        /* --- BOTÕES GERAIS --- */
         .btn { cursor: pointer; transition: transform 0.2s; }
         .btn:active { transform: scale(0.95); }
 
         /* Botões Laterais (Redondos e Neutros) */
         .btn-round {
-            width: 48px; height: 48px; border-radius: 50%;
+            width: 44px; height: 44px; border-radius: 50%; /* Um pouco menores */
             background-color: rgba(0, 0, 0, 0.4); 
             border: 1px solid rgba(255, 255, 255, 0.6);
             display: flex; justify-content: center; align-items: center;
             backdrop-filter: blur(4px);
         }
-        .icon-svg { width: 24px; height: 24px; fill: white; }
+        .icon-svg { width: 22px; height: 22px; fill: white; }
         
-        /* Destaque quando modo vídeo está ativo */
         .video-active { background-color: white !important; }
         .video-active .icon-svg { fill: black !important; }
 
         /* Botões de Filtro (Pílulas) */
         .btn-filter {
-            padding: 8px 16px; border-radius: 20px; border: none;
+            padding: 8px 12px; border-radius: 20px; border: none;
             font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px;
             box-shadow: 0 2px 4px rgba(0,0,0,0.3);
             background: rgba(255, 255, 255, 0.9); color: #000;
         }
 
-        /* --- BOTÃO PRINCIPAL (COM ÍCONE DE CÂMERA) --- */
+        /* --- BOTÃO PRINCIPAL (DISPARO) --- */
         .btn-shot-border {
-            width: 80px; height: 80px; border-radius: 50%;
+            width: 75px; height: 75px; border-radius: 50%;
             border: 4px solid white; 
             background: transparent;
             display: flex; justify-content: center; align-items: center;
             position: relative;
             box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+            margin: 0 5px; /* Margem extra só no central */
         }
         
         .btn-shot-inner {
-            width: 68px; height: 68px; border-radius: 50%;
+            width: 63px; height: 63px; border-radius: 50%;
             background: white; 
             display: flex; justify-content: center; align-items: center;
             transition: all 0.3s ease;
         }
 
-        /* Ícone da câmera dentro do botão */
         .icon-camera-center {
-            width: 32px; height: 32px; fill: #111;
+            width: 28px; height: 28px; fill: #111;
             transition: opacity 0.2s;
         }
 
-        /* ESTADO GRAVANDO (Quadrado Vermelho) */
+        /* Estado Gravando */
         .recording .btn-shot-inner {
-            width: 35px; height: 35px; border-radius: 6px; 
-            background: #ff3b30; /* Vermelho */
+            width: 32px; height: 32px; border-radius: 6px; 
+            background: #ff3b30; 
         }
-        .recording .icon-camera-center { opacity: 0; } /* Esconde o ícone */
+        .recording .icon-camera-center { opacity: 0; }
         .recording { border-color: rgba(255,255,255,0.6); }
 
         /* --- PREVIEW --- */
@@ -102,15 +104,21 @@
             box-shadow: 0 4px 20px rgba(0,0,0,0.5);
             background: #000;
         }
-        .preview-actions { display: flex; flex-direction: column; gap: 10px; width: 85%; }
+        /* Botões de Preview lado a lado */
+        .preview-actions { display: flex; gap: 15px; width: 90%; justify-content: center; }
         .btn-action {
-            padding: 16px; border-radius: 12px; border: none;
-            font-weight: 600; font-size: 15px; color: white; width: 100%;
+            padding: 15px; border-radius: 50px; border: none;
+            font-weight: 600; font-size: 14px; color: white; width: 100%;
             display: flex; justify-content: center; align-items: center; gap: 8px;
+            text-transform: uppercase;
         }
-        .btn-save { background: #007AFF; } /* Azul iOS */
-        .btn-share { background: #34C759; } /* Verde WhatsApp */
-        .btn-back { background: #3a3a3c; } /* Cinza Escuro */
+        .btn-save { background: #007AFF; } /* Azul para salvar */
+        .btn-back { background: #3a3a3c; } /* Cinza para voltar */
+
+        /* Aviso de dica */
+        .tip-text {
+            color: #aaa; font-size: 12px; margin-top: 15px; text-align: center; max-width: 80%;
+        }
 
         #status-msg {
             position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
@@ -121,7 +129,7 @@
 </head>
 <body>
 
-    <div id="status-msg">Iniciando câmera e áudio...<br>Por favor, aguarde.</div>
+    <div id="status-msg">Iniciando...<br>Permita o uso da Câmera e Microfone</div>
 
     <video id="camera" playsinline muted></video>
     <img id="moldura-source" src="moldura_lilas.png" style="display:none;">
@@ -157,11 +165,12 @@
     <div id="preview-screen">
         <img id="result-img" class="preview-content" style="display:none;">
         <video id="result-video" class="preview-content" controls loop playsinline style="display:none;"></video>
+        
         <div class="preview-actions">
-            <button class="btn-action btn-save" onclick="salvarMidia()">⬇ Salvar na Galeria</button>
-            <button class="btn-action btn-share" onclick="compartilharMidia()">➤ Compartilhar</button>
             <button class="btn-action btn-back" onclick="fecharPreview()">↺ Voltar</button>
+            <button class="btn-action btn-save" onclick="salvarMidia()">⬇ Salvar na Galeria</button>
         </div>
+        <div class="tip-text">Dica: Para postar no Instagram ou WhatsApp, salve na galeria primeiro.</div>
     </div>
 
     <script>
@@ -171,7 +180,6 @@
         const moldura = document.getElementById('moldura-source');
         const statusMsg = document.getElementById('status-msg');
         
-        // Globais
         let localStream = null;
         let facingMode = "user"; 
         let isVideoMode = false;
@@ -180,28 +188,26 @@
         let chunks = [];
         let finalFile = null;
 
-        // 1. INICIALIZAÇÃO SEGURA
+        // --- INICIALIZAÇÃO ---
         async function startCamera() {
             try {
                 if (localStream) {
                     localStream.getTracks().forEach(t => t.stop());
                 }
                 
-                // Pedir permissão explícita de Áudio E Vídeo
+                // Configuração robusta para áudio
                 localStream = await navigator.mediaDevices.getUserMedia({
                     video: { facingMode: facingMode, width: { ideal: 1280 }, height: { ideal: 720 } },
-                    audio: true
+                    audio: { echoCancellation: true, noiseSuppression: true }
                 });
 
                 video.srcObject = localStream;
-                // Importante: video.play() é necessário para iniciar o fluxo no iPhone
                 await video.play(); 
                 
                 statusMsg.style.display = 'none';
                 drawFrame(); 
             } catch (err) {
-                statusMsg.innerHTML = "Erro: " + err.message + "<br>Verifique se permitiu Câmera e Microfone.";
-                console.error(err);
+                statusMsg.innerHTML = "Erro: " + err.message + "<br>Verifique permissões de Câmera/Microfone.";
             }
         }
 
@@ -223,7 +229,7 @@
             requestAnimationFrame(drawFrame);
         }
 
-        // 2. CONTROLES
+        // --- CONTROLES ---
         function virarCamera() {
             facingMode = facingMode === "user" ? "environment" : "user";
             startCamera();
@@ -237,11 +243,13 @@
             isVideoMode = !isVideoMode;
             document.getElementById('btnMode').classList.toggle('video-active');
             
-            // Visual feedback no botão central
-            const icon = document.querySelector('.icon-camera-center');
-            // Se quiser mudar o ícone para câmera de vídeo aqui, pode, mas mantivemos o ícone de câmera preta.
-            if(isVideoMode) {
-               // Modo vídeo ativado
+            const innerBtn = document.querySelector('.btn-shot-inner');
+            if (isVideoMode) {
+                innerBtn.style.backgroundColor = '#ff3b30'; 
+                innerBtn.style.transform = 'scale(0.8)';
+            } else {
+                innerBtn.style.backgroundColor = 'white';
+                innerBtn.style.transform = 'scale(1)';
             }
         }
 
@@ -254,13 +262,10 @@
             }
         }
 
-        // 3. FOTO
+        // --- FOTO ---
         function takePhoto() {
-            // Flash visual
-            const flash = document.createElement('div');
-            flash.style.cssText = "position:fixed;top:0;left:0;width:100%;height:100%;background:white;z-index:99999;";
-            document.body.appendChild(flash);
-            setTimeout(() => document.body.removeChild(flash), 100);
+            canvas.style.opacity = '0.5';
+            setTimeout(() => canvas.style.opacity = '1', 100);
 
             canvas.toBlob(blob => {
                 finalFile = new File([blob], "foto.png", { type: "image/png" });
@@ -269,32 +274,28 @@
             }, 'image/png');
         }
 
-        // 4. VÍDEO COM ÁUDIO
+        // --- VÍDEO ---
         function startRecording() {
             const canvasStream = canvas.captureStream(30);
-            
-            // Tenta pegar o áudio do stream original
             const audioTracks = localStream.getAudioTracks();
             
             if (audioTracks.length === 0) {
-                alert("Atenção: Microfone não detectado. O vídeo pode ficar sem som.");
+                console.warn("Sem microfone detectado.");
             }
 
-            // Cria novo stream misto
             const combinedStream = new MediaStream([...canvasStream.getVideoTracks(), ...audioTracks]);
 
-            // Tenta codecs compatíveis com WhatsApp
+            // Opções para maximizar compatibilidade de gravação
             let options = { mimeType: 'video/webm' };
-            if (MediaRecorder.isTypeSupported('video/mp4')) {
-                options = { mimeType: 'video/mp4' };
-            } else if (MediaRecorder.isTypeSupported('video/webm;codecs=h264')) {
-                options = { mimeType: 'video/webm;codecs=h264' };
+            // Tenta forçar bitrate de áudio
+            if (MediaRecorder.isTypeSupported('video/webm;codecs=vp8,opus')) {
+                options = { mimeType: 'video/webm;codecs=vp8,opus', audioBitsPerSecond: 128000 };
             }
 
             try {
                 mediaRecorder = new MediaRecorder(combinedStream, options);
             } catch (e) {
-                mediaRecorder = new MediaRecorder(combinedStream); // Fallback
+                mediaRecorder = new MediaRecorder(combinedStream);
             }
 
             chunks = [];
@@ -303,11 +304,9 @@
             mediaRecorder.onstop = () => {
                 const blob = new Blob(chunks, { type: mediaRecorder.mimeType });
                 
-                // Define extensão
-                let ext = 'webm';
-                if (mediaRecorder.mimeType.includes('mp4')) ext = 'mp4';
-                
-                finalFile = new File([blob], `video_filtro.${ext}`, { type: mediaRecorder.mimeType });
+                // Salva como .webm (que o Android gera)
+                // O usuário DEVE salvar na galeria para o celular converter
+                finalFile = new File([blob], `video_filtro.webm`, { type: mediaRecorder.mimeType });
                 
                 const vidUrl = URL.createObjectURL(blob);
                 const vid = document.getElementById('result-video');
@@ -326,7 +325,7 @@
             document.getElementById('btnShot').classList.remove('recording');
         }
 
-        // 5. PREVIEW E COMPARTILHAMENTO
+        // --- PREVIEW ---
         function showPreview(type) {
             document.getElementById('preview-screen').style.display = 'flex';
             document.getElementById('result-img').style.display = type === 'image' ? 'block' : 'none';
@@ -351,26 +350,6 @@
             a.href = URL.createObjectURL(finalFile);
             a.download = finalFile.name;
             a.click();
-        }
-
-        async function compartilharMidia() {
-            if (!finalFile) return;
-            
-            // Tenta compartilhar nativamente
-            if (navigator.canShare && navigator.canShare({ files: [finalFile] })) {
-                try {
-                    await navigator.share({
-                        files: [finalFile],
-                        title: 'Filtro',
-                        text: 'Olha o vídeo que fiz!'
-                    });
-                } catch (err) {
-                    console.log("Erro share: " + err);
-                }
-            } else {
-                // Se falhar (comum para vídeos em alguns Androids/WebViews), avisa o usuário
-                alert("O compartilhamento direto de vídeo não é suportado pelo seu navegador atual. \n\nPor favor, clique em 'SALVAR NA GALERIA' e envie pelo WhatsApp manualmente.");
-            }
         }
 
         // Inicia
