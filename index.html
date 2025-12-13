@@ -3,131 +3,114 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Filtro Casamento V9 - Final</title>
+    <title>Filtro V10 - Final Áudio</title>
     
     <style>
-        /* --- RESET GERAL --- */
-        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; outline: none; touch-action: manipulation; }
-        
+        /* --- RESET --- */
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; outline: none; }
         body, html { 
-            margin: 0; padding: 0; 
-            width: 100%; height: 100%; 
-            overflow: hidden; 
-            background-color: #000;
-            font-family: sans-serif;
+            margin: 0; padding: 0; width: 100%; height: 100%; 
+            overflow: hidden; background-color: #000; font-family: sans-serif;
         }
 
-        /* --- VÍDEO E CANVAS --- */
+        /* --- CÂMERA --- */
         #camera { display: none; } /* Vídeo fonte escondido */
-        
         #canvasOutput {
-            position: absolute; top: 0; left: 0; 
-            width: 100%; height: 100%;
-            object-fit: cover; 
-            z-index: 1; 
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            object-fit: cover; z-index: 1; 
         }
 
-        /* --- CONTROLES (POSIÇÃO FIXA) --- */
+        /* --- CONTROLES --- */
         .controls-area {
-            position: fixed; 
-            bottom: 0; left: 0; width: 100%;
-            z-index: 9999; 
-            padding-bottom: 30px;
-            padding-top: 20px;
+            position: fixed; bottom: 0; left: 0; width: 100%; z-index: 9999; 
+            padding-bottom: 30px; padding-top: 20px;
             background: linear-gradient(to top, rgba(0,0,0,0.8), transparent);
             display: flex; justify-content: center;
         }
-
         .main-action-line {
-            display: flex; 
-            justify-content: center; 
-            align-items: center;
-            gap: 15px; 
-            width: 100%;
-        }
-
-        /* --- ESTILOS DOS BOTÕES --- */
-        .btn { cursor: pointer; transition: transform 0.1s; }
-        .btn:active { transform: scale(0.9); }
-
-        /* Botões Laterais - Redondos */
-        .btn-round {
-            width: 50px; height: 50px;
-            border-radius: 50%;
-            background-color: rgba(255, 255, 255, 0.2);
-            border: 1px solid rgba(255, 255, 255, 0.3);
             display: flex; justify-content: center; align-items: center;
-            backdrop-filter: blur(4px);
+            gap: 15px; width: 100%;
         }
-        .icon-svg { width: 24px; height: 24px; fill: white; }
 
-        /* Destaque modo vídeo */
-        .video-active { background-color: #e74c3c !important; border-color: #e74c3c !important; }
+        /* --- BOTÕES --- */
+        .btn { cursor: pointer; transition: transform 0.1s; }
+        .btn:active { transform: scale(0.95); }
 
-        /* Botões de Filtro */
+        /* Botões Laterais (Virar / Modo) */
+        .btn-round {
+            width: 50px; height: 50px; border-radius: 50%;
+            background-color: rgba(255, 255, 255, 0.15);
+            border: 1px solid rgba(255, 255, 255, 0.4);
+            display: flex; justify-content: center; align-items: center;
+            backdrop-filter: blur(5px);
+        }
+        .icon-svg { width: 26px; height: 26px; fill: white; }
+        
+        /* Destaque modo vídeo (Vermelho vivo) */
+        .video-active { background-color: #d63031 !important; border-color: #d63031 !important; }
+
+        /* Botões de Filtro (Neutros) */
         .btn-filter {
-            padding: 10px 16px;
-            border-radius: 30px; border: none;
-            font-size: 12px; font-weight: bold;
-            text-transform: uppercase;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+            padding: 10px 18px; border-radius: 30px; border: none;
+            font-size: 12px; font-weight: bold; text-transform: uppercase;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+            background: rgba(255, 255, 255, 0.9); color: #333;
         }
-        .btn-lil { background: #E6E6FA; color: #444; }
-        .btn-min { background: #333; color: white; border: 1px solid #666; }
-
-        /* BOTÃO PRINCIPAL (DOURADO) */
+        
+        /* --- BOTÃO PRINCIPAL (COR BATOM / MARSALA) --- */
+        /* Essa cor é neutra, elegante e serve para qualquer ocasião */
         .btn-shot {
-            width: 80px; height: 80px;
-            border-radius: 50%;
-            background: radial-gradient(circle, #fcf6ba, #bf953f);
+            width: 85px; height: 85px; border-radius: 50%;
+            /* Gradiente Marsala / Rose Nude */
+            background: radial-gradient(circle, #d2a6a6, #9c5858);
             border: 4px solid #fff;
-            box-shadow: 0 0 15px rgba(0,0,0,0.5);
+            box-shadow: 0 0 20px rgba(156, 88, 88, 0.6);
             display: flex; justify-content: center; align-items: center;
             position: relative;
         }
-        .icon-shot { width: 32px; height: 32px; fill: #222; }
+        .icon-shot { width: 36px; height: 36px; fill: #330000; } /* Ícone escuro para contraste */
 
         /* Animação gravando */
         .recording-pulse {
             animation: pulse 1s infinite;
-            border-color: #ff0000;
+            background: #ff0000; border-color: #ff0000;
         }
+        .recording-pulse .icon-shot { fill: white; }
+        
         @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.05); } 100% { transform: scale(1); } }
 
         /* --- PREVIEW --- */
         #preview-screen {
-            display: none; 
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: #000; z-index: 10000;
             flex-direction: column; align-items: center; justify-content: center;
         }
         .preview-content { 
-            max-width: 90%; max-height: 70%; 
-            border: 2px solid #bf953f; margin-bottom: 20px; 
-            border-radius: 8px;
+            max-width: 90%; max-height: 65%; 
+            border: 2px solid #9c5858; margin-bottom: 20px; border-radius: 10px;
         }
-        .preview-actions { display: flex; flex-direction: column; gap: 10px; width: 80%; }
+        .preview-actions { display: flex; flex-direction: column; gap: 12px; width: 85%; }
         .btn-action {
-            padding: 15px; border-radius: 50px; border: none;
+            padding: 16px; border-radius: 50px; border: none;
             font-weight: bold; font-size: 14px; text-transform: uppercase;
-            color: white; width: 100%;
+            color: white; width: 100%; display: flex; justify-content: center; gap: 10px;
         }
-        .btn-save { background: #bf953f; color: #000; }
-        .btn-share { background: #25D366; } 
+        .btn-save { background: #9c5858; } /* Cor Batom */
+        .btn-share { background: #25D366; } /* Verde WhatsApp */
         .btn-retry { background: #555; }
 
         #status-msg {
             position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
             color: white; font-size: 16px; text-align: center; pointer-events: none;
+            background: rgba(0,0,0,0.5); padding: 10px; border-radius: 8px;
         }
     </style>
 </head>
 <body>
 
-    <div id="status-msg">Iniciando câmera...</div>
+    <div id="status-msg">Carregando câmera e áudio...</div>
 
-    <video id="camera" playsinline muted></video>
-    <img id="moldura-source" src="moldura_lilas.png" style="display:none;">
+    <video id="camera" playsinline muted></video> <img id="moldura-source" src="moldura_lilas.png" style="display:none;">
 
     <canvas id="canvasOutput"></canvas>
 
@@ -135,19 +118,17 @@
         <div class="main-action-line">
             
             <button class="btn btn-round" onclick="virarCamera()">
-                <svg class="icon-svg" viewBox="0 0 24 24">
-                    <path d="M12 4V1L8 5l4 4V6c3.31 0 6 2.69 6 6 0 1.01-.25 1.97-.7 2.8l1.46 1.46C19.54 15.03 20 13.57 20 12c0-4.42-3.58-8-8-8zm0 14c-3.31 0-6-2.69-6-6 0-1.01.25-1.97.7-2.8L5.24 7.74C4.46 8.97 4 10.43 4 12c0 4.42 3.58 8 8 8v3l4-4-4-4v3z"/>
-                </svg>
+                <svg class="icon-svg" viewBox="0 0 24 24"><path d="M12 4V1L8 5l4 4V6c3.31 0 6 2.69 6 6 0 1.01-.25 1.97-.7 2.8l1.46 1.46C19.54 15.03 20 13.57 20 12c0-4.42-3.58-8-8-8zm0 14c-3.31 0-6-2.69-6-6 0-1.01.25-1.97.7-2.8L5.24 7.74C4.46 8.97 4 10.43 4 12c0 4.42 3.58 8 8 8v3l4-4-4-4v3z"/></svg>
             </button>
 
-            <button class="btn btn-filter btn-lil" onclick="setFrame('moldura_lilas.png')">Filtro 1</button>
+            <button class="btn btn-filter" onclick="setFrame('moldura_lilas.png')">Filtro 1</button>
 
             <button id="btnShot" class="btn btn-shot" onclick="handleShot()">
                 <svg id="iconPhoto" class="icon-shot" viewBox="0 0 24 24"><path d="M20 5h-3.17L15 3H9L7.17 5H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 14H4V7h4.05l1.83-2h4.24l1.83 2H20v12zM12 9c-2.76 0-5 2.24-5 5s2.24 5 5 5 5-2.24 5-5-2.24-5-5-5zm0 8c-1.66 0-3-1.34-3-3s1.34-3 3-3 3 1.34 3 3-1.34 3-3 3z"/></svg>
                 <svg id="iconVideo" class="icon-shot" viewBox="0 0 24 24" style="display:none;"><path d="M17 10.5V7c0-.55-.45-1-1-1H4c-.55 0-1 .45-1 1v10c0 .55.45 1 1 1h12c.55 0 1-.45 1-1v-3.5l4 4v-11l-4 4z"/></svg>
             </button>
 
-            <button class="btn btn-filter btn-min" onclick="setFrame('moldura_minimalista.png')">Filtro 2</button>
+            <button class="btn btn-filter" onclick="setFrame('moldura_minimalista.png')">Filtro 2</button>
 
             <button id="btnMode" class="btn btn-round" onclick="toggleMode()">
                 <svg class="icon-svg" viewBox="0 0 24 24"><path d="M17 10.5V7c0-.55-.45-1-1-1H4c-.55 0-1 .45-1 1v10c0 .55.45 1 1 1h12c.55 0 1-.45 1-1v-3.5l4 4v-11l-4 4z"/></svg>
@@ -161,7 +142,7 @@
         <video id="result-video" class="preview-content" controls loop playsinline style="display:none;"></video>
         <div class="preview-actions">
             <button class="btn-action btn-save" onclick="salvarMidia()">⬇ Salvar na Galeria</button>
-            <button class="btn-action btn-share" onclick="compartilharMidia()">➤ Compartilhar</button>
+            <button class="btn-action btn-share" onclick="compartilharMidia()">➤ Compartilhar no WhatsApp</button>
             <button class="btn-action btn-retry" onclick="fecharPreview()">↺ Voltar</button>
         </div>
     </div>
@@ -181,15 +162,15 @@
         let chunks = [];
         let finalFile = null;
 
-        // --- INICIAR CÂMERA ---
+        // --- INICIALIZAÇÃO ---
         async function startCamera() {
             try {
                 if (stream) stream.getTracks().forEach(t => t.stop());
                 
-                // Solicita ÁUDIO e VÍDEO juntos
+                // Solicita ÁUDIO explicitamente
                 stream = await navigator.mediaDevices.getUserMedia({
                     video: { facingMode: facingMode, width: { ideal: 1280 }, height: { ideal: 720 } },
-                    audio: true 
+                    audio: true
                 });
 
                 video.srcObject = stream;
@@ -198,11 +179,12 @@
                 statusMsg.style.display = 'none';
                 drawFrame(); 
             } catch (err) {
-                statusMsg.innerHTML = "Erro: " + err.message + ". <br>Ative as permissões de câmera/áudio no navegador.";
+                statusMsg.innerHTML = "ERRO: " + err.message + "<br>Ative o som e câmera nas configurações.";
+                console.error(err);
             }
         }
 
-        // --- DESENHAR NO CANVAS ---
+        // --- DESENHO ---
         function drawFrame() {
             if (!video.paused && !video.ended) {
                 canvas.width = video.videoWidth;
@@ -221,7 +203,7 @@
             requestAnimationFrame(drawFrame);
         }
 
-        // --- CONTROLES ---
+        // --- BOTÕES ---
         function virarCamera() {
             facingMode = facingMode === "user" ? "environment" : "user";
             startCamera();
@@ -250,60 +232,51 @@
         // --- FOTO ---
         function takePhoto() {
             canvas.toBlob(blob => {
-                finalFile = new File([blob], "foto_casamento.png", { type: "image/png" });
+                finalFile = new File([blob], "foto_evento.png", { type: "image/png" });
                 document.getElementById('result-img').src = URL.createObjectURL(blob);
                 showPreview('image');
             });
         }
 
-        // --- VÍDEO (LÓGICA CORRIGIDA PARA WHATSAPP) ---
+        // --- VÍDEO (Lógica de Áudio Robusta) ---
         function startRecording() {
-            // 1. Pega o vídeo do canvas
             const canvasStream = canvas.captureStream(30);
-            
-            // 2. Pega o áudio do microfone
             const audioTracks = stream.getAudioTracks();
             
-            if (audioTracks.length === 0) {
-                alert("Aviso: Microfone não detectado. O vídeo ficará sem som.");
+            // Verifica se o áudio está ativo
+            if (audioTracks.length === 0 || !audioTracks[0].enabled) {
+                alert("Alerta: Microfone não detectado ou mudo. O vídeo ficará sem som.");
             }
 
-            // 3. Combina Canvas + Mic
-            let combinedStream = new MediaStream([...canvasStream.getVideoTracks(), ...audioTracks]);
+            // Junta Vídeo + Áudio
+            const combinedStream = new MediaStream([...canvasStream.getVideoTracks(), ...audioTracks]);
 
-            // 4. Seleção de Formato Prioritária para WhatsApp
-            let mimeType = 'video/webm'; // Padrão genérico
-            
-            // Verifica suporte na ordem de preferência do WhatsApp
+            // Formatos para WhatsApp
+            let options = { mimeType: 'video/webm' };
             if (MediaRecorder.isTypeSupported('video/mp4')) {
-                mimeType = 'video/mp4';
+                options = { mimeType: 'video/mp4' }; // Safari/iOS
             } else if (MediaRecorder.isTypeSupported('video/webm;codecs=h264')) {
-                mimeType = 'video/webm;codecs=h264';
-            } else if (MediaRecorder.isTypeSupported('video/webm;codecs=vp9')) {
-                mimeType = 'video/webm;codecs=vp9';
+                options = { mimeType: 'video/webm;codecs=h264' }; // Android
             }
-
-            let options = { mimeType: mimeType };
 
             try {
                 mediaRecorder = new MediaRecorder(combinedStream, options);
-            } catch (e) {
-                // Fallback se a opção falhar
+            } catch (err) {
+                console.warn("Codec falhou, tentando padrão...", err);
                 mediaRecorder = new MediaRecorder(combinedStream);
             }
-            
+
             chunks = [];
-            
             mediaRecorder.ondataavailable = e => { if (e.data.size > 0) chunks.push(e.data); };
             
             mediaRecorder.onstop = () => {
                 const blob = new Blob(chunks, { type: mediaRecorder.mimeType });
                 
-                // Força extensão .mp4 se o navegador permitir, senão .webm
+                // Extensão correta
                 let ext = 'webm';
                 if (mediaRecorder.mimeType.includes('mp4')) ext = 'mp4';
                 
-                finalFile = new File([blob], `video_casamento.${ext}`, { type: mediaRecorder.mimeType });
+                finalFile = new File([blob], `video_evento.${ext}`, { type: mediaRecorder.mimeType });
                 
                 const vidUrl = URL.createObjectURL(blob);
                 const vid = document.getElementById('result-video');
@@ -322,16 +295,15 @@
             document.getElementById('btnShot').classList.remove('recording-pulse');
         }
 
-        // --- PREVIEW ---
+        // --- PREVIEW E SHARE ---
         function showPreview(type) {
-            const screen = document.getElementById('preview-screen');
-            screen.style.display = 'flex';
+            document.getElementById('preview-screen').style.display = 'flex';
             document.getElementById('result-img').style.display = type === 'image' ? 'block' : 'none';
             const vid = document.getElementById('result-video');
             vid.style.display = type === 'video' ? 'block' : 'none';
             
             if (type === 'video') {
-                vid.muted = false; // Garante que não esteja mudo no preview
+                vid.muted = false; // Garante som no preview
                 vid.volume = 1.0;
                 vid.play();
             }
@@ -351,19 +323,25 @@
         }
 
         async function compartilharMidia() {
-            if (navigator.share && finalFile) {
+            if (!finalFile) return;
+            
+            // Verifica se o navegador suporta share de arquivos
+            if (navigator.canShare && navigator.canShare({ files: [finalFile] })) {
                 try {
                     await navigator.share({
                         files: [finalFile],
-                        title: 'Filtro Casamento',
-                        text: 'Olha que legal!'
+                        title: 'Minha Lembrança',
+                        text: 'Olha que legal o filtro!'
                     });
-                } catch (err) { console.log("Erro share: " + err); }
+                } catch (err) {
+                    console.error("Erro share:", err);
+                }
             } else {
-                alert("Use o botão 'Salvar na Galeria' e envie manualmente pelo WhatsApp.");
+                alert("Seu navegador não suporta compartilhamento direto. Por favor, use o botão 'Salvar na Galeria' e envie manualmente.");
             }
         }
 
+        // Inicia
         document.body.addEventListener('click', () => { if (!stream) startCamera(); });
         window.onload = startCamera;
 
