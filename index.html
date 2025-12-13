@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Filtro Casamento V7</title>
+    <title>Filtro Casamento V8 - Com Áudio</title>
     
     <style>
         /* --- RESET GERAL --- */
@@ -12,16 +12,14 @@
         body, html { 
             margin: 0; padding: 0; 
             width: 100%; height: 100%; 
-            overflow: hidden; /* Impede rolagem */
+            overflow: hidden; 
             background-color: #000;
             font-family: sans-serif;
         }
 
         /* --- VÍDEO E CANVAS --- */
-        /* Vídeo oculto, usado apenas como fonte */
-        #camera { display: none; }
+        #camera { display: none; } /* Vídeo fonte escondido */
         
-        /* Canvas cobre a tela toda */
         #canvasOutput {
             position: absolute; top: 0; left: 0; 
             width: 100%; height: 100%;
@@ -31,17 +29,15 @@
 
         /* --- CONTROLES (POSIÇÃO FIXA) --- */
         .controls-area {
-            position: fixed; /* Fixado na tela do celular */
+            position: fixed; 
             bottom: 0; left: 0; width: 100%;
-            z-index: 9999; /* Bem acima de tudo */
+            z-index: 9999; 
             padding-bottom: 30px;
             padding-top: 20px;
-            /* Gradiente para os botões aparecerem bem */
             background: linear-gradient(to top, rgba(0,0,0,0.8), transparent);
             display: flex; justify-content: center;
         }
 
-        /* Linha única de botões */
         .main-action-line {
             display: flex; 
             justify-content: center; 
@@ -54,7 +50,7 @@
         .btn { cursor: pointer; transition: transform 0.1s; }
         .btn:active { transform: scale(0.9); }
 
-        /* Botões Laterais (Virar e Modo Vídeo) - Redondos e Escuros */
+        /* Botões Laterais - Redondos */
         .btn-round {
             width: 50px; height: 50px;
             border-radius: 50%;
@@ -65,10 +61,10 @@
         }
         .icon-svg { width: 24px; height: 24px; fill: white; }
 
-        /* Destaque quando modo vídeo está ativo */
+        /* Destaque modo vídeo */
         .video-active { background-color: #e74c3c !important; border-color: #e74c3c !important; }
 
-        /* Botões de Filtro (Pílulas) */
+        /* Botões de Filtro */
         .btn-filter {
             padding: 10px 16px;
             border-radius: 30px; border: none;
@@ -117,19 +113,18 @@
             color: white; width: 100%;
         }
         .btn-save { background: #bf953f; color: #000; }
-        .btn-share { background: #25D366; } /* Verde WhatsApp */
+        .btn-share { background: #25D366; } 
         .btn-retry { background: #555; }
 
-        /* Mensagem de Erro/Carregando */
         #status-msg {
             position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
-            color: white; font-size: 18px; text-align: center; pointer-events: none;
+            color: white; font-size: 16px; text-align: center; pointer-events: none;
         }
     </style>
 </head>
 <body>
 
-    <div id="status-msg">Toque na tela para iniciar a câmera...</div>
+    <div id="status-msg">Toque na tela para iniciar...</div>
 
     <video id="camera" playsinline muted></video>
     <img id="moldura-source" src="moldura_lilas.png" style="display:none;">
@@ -140,7 +135,9 @@
         <div class="main-action-line">
             
             <button class="btn btn-round" onclick="virarCamera()">
-                <svg class="icon-svg" viewBox="0 0 24 24"><path d="M23 4v6h-6M1 20v-6h6M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
+                <svg class="icon-svg" viewBox="0 0 24 24">
+                    <path d="M20 4h-3.17L15 2H9L7.17 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm-5 11.5V13H9v2.5L5.5 12 9 8.5V11h6V8.5l3.5 3.5-3.5 3.5z"/>
+                </svg>
             </button>
 
             <button class="btn btn-filter btn-lil" onclick="setFrame('moldura_lilas.png')">Filtro 1</button>
@@ -184,36 +181,33 @@
         let chunks = [];
         let finalFile = null;
 
-        // INICIAR CÂMERA
+        // --- INICIAR CÂMERA ---
         async function startCamera() {
             try {
                 if (stream) stream.getTracks().forEach(t => t.stop());
                 
+                // Solicita ÁUDIO e VÍDEO
                 stream = await navigator.mediaDevices.getUserMedia({
                     video: { facingMode: facingMode, width: { ideal: 1280 }, height: { ideal: 720 } },
                     audio: true
                 });
 
                 video.srcObject = stream;
-                
-                // CORREÇÃO TELA PRETA: Forçar play
                 await video.play(); 
                 
-                statusMsg.style.display = 'none'; // Esconde mensagem de "carregando"
-                drawFrame(); // Inicia o desenho no canvas
+                statusMsg.style.display = 'none';
+                drawFrame(); 
             } catch (err) {
-                statusMsg.innerHTML = "Erro ao acessar câmera: " + err.message + "<br>Verifique as permissões.";
+                statusMsg.innerHTML = "Erro ao acessar câmera/microfone: " + err.message;
             }
         }
 
-        // DESENHAR NO CANVAS (LOOP)
+        // --- DESENHAR NO CANVAS ---
         function drawFrame() {
             if (!video.paused && !video.ended) {
-                // Ajusta tamanho do canvas ao vídeo real
                 canvas.width = video.videoWidth;
                 canvas.height = video.videoHeight;
                 
-                // Desenha vídeo
                 ctx.save();
                 if (facingMode === "user") {
                     ctx.translate(canvas.width, 0);
@@ -222,13 +216,12 @@
                 ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
                 ctx.restore();
 
-                // Desenha moldura
                 ctx.drawImage(moldura, 0, 0, canvas.width, canvas.height);
             }
             requestAnimationFrame(drawFrame);
         }
 
-        // BOTÕES E LÓGICA
+        // --- CONTROLES ---
         function virarCamera() {
             facingMode = facingMode === "user" ? "environment" : "user";
             startCamera();
@@ -254,33 +247,52 @@
             }
         }
 
-        // FOTO
+        // --- FOTO ---
         function takePhoto() {
             canvas.toBlob(blob => {
-                finalFile = new File([blob], "foto.png", { type: "image/png" });
+                finalFile = new File([blob], "foto_casamento.png", { type: "image/png" });
                 document.getElementById('result-img').src = URL.createObjectURL(blob);
                 showPreview('image');
             });
         }
 
-        // VÍDEO
+        // --- VÍDEO COM ÁUDIO ---
         function startRecording() {
+            // 1. Pega o vídeo do canvas (o filtro)
             const canvasStream = canvas.captureStream(30);
+            
+            // 2. Pega o áudio do stream original do microfone
             const audioTracks = stream.getAudioTracks();
-            const combined = new MediaStream([...canvasStream.getVideoTracks(), ...audioTracks]);
+            
+            // 3. Junta os dois (Vídeo do Canvas + Áudio do Mic)
+            let combinedStream;
+            if (audioTracks.length > 0) {
+                combinedStream = new MediaStream([...canvasStream.getVideoTracks(), ...audioTracks]);
+            } else {
+                combinedStream = canvasStream; // Se não tiver áudio, grava mudo mesmo
+            }
 
-            // Tenta MP4 ou WebM
+            // 4. Configura formato para WhatsApp
             let options = { mimeType: 'video/webm' };
-            if (MediaRecorder.isTypeSupported('video/mp4')) options.mimeType = 'video/mp4';
+            if (MediaRecorder.isTypeSupported('video/mp4')) {
+                options = { mimeType: 'video/mp4', videoBitsPerSecond: 2500000 };
+            } else if (MediaRecorder.isTypeSupported('video/webm;codecs=h264')) {
+                options = { mimeType: 'video/webm;codecs=h264', videoBitsPerSecond: 2500000 };
+            }
 
-            mediaRecorder = new MediaRecorder(combined, options);
+            mediaRecorder = new MediaRecorder(combinedStream, options);
             chunks = [];
+            
             mediaRecorder.ondataavailable = e => { if (e.data.size > 0) chunks.push(e.data); };
+            
             mediaRecorder.onstop = () => {
                 const blob = new Blob(chunks, { type: options.mimeType });
                 let ext = options.mimeType.includes('mp4') ? 'mp4' : 'webm';
-                finalFile = new File([blob], `video.${ext}`, { type: options.mimeType });
-                document.getElementById('result-video').src = URL.createObjectURL(blob);
+                finalFile = new File([blob], `video_casamento.${ext}`, { type: options.mimeType });
+                
+                const vidUrl = URL.createObjectURL(blob);
+                const vid = document.getElementById('result-video');
+                vid.src = vidUrl;
                 showPreview('video');
             };
 
@@ -295,14 +307,20 @@
             document.getElementById('btnShot').classList.remove('recording-pulse');
         }
 
-        // PREVIEW E SHARE
+        // --- PREVIEW ---
         function showPreview(type) {
             const screen = document.getElementById('preview-screen');
             screen.style.display = 'flex';
             document.getElementById('result-img').style.display = type === 'image' ? 'block' : 'none';
             const vid = document.getElementById('result-video');
             vid.style.display = type === 'video' ? 'block' : 'none';
-            if (type === 'video') vid.play();
+            
+            // Tenta reproduzir com som
+            if (type === 'video') {
+                vid.muted = false;
+                vid.volume = 1.0;
+                vid.play();
+            }
         }
 
         function fecharPreview() {
@@ -311,6 +329,7 @@
         }
 
         function salvarMidia() {
+            if (!finalFile) return;
             const a = document.createElement('a');
             a.href = URL.createObjectURL(finalFile);
             a.download = finalFile.name;
@@ -325,18 +344,13 @@
                         title: 'Filtro Casamento',
                         text: 'Olha que legal!'
                     });
-                } catch (err) { alert("Erro ao compartilhar. Tente salvar primeiro."); }
+                } catch (err) { console.log("Compartilhamento cancelado ou erro: " + err); }
             } else {
-                alert("Seu navegador não suporta compartilhamento direto. Salve e envie manualmente.");
+                alert("Use o botão de Salvar e envie pelo WhatsApp manualmente.");
             }
         }
 
-        // Se clicar na tela preta inicial, tenta iniciar câmera (para iOS que bloqueia autoplay)
-        document.body.addEventListener('click', () => {
-            if (!stream) startCamera();
-        });
-
-        // Inicia automaticamente
+        document.body.addEventListener('click', () => { if (!stream) startCamera(); });
         window.onload = startCamera;
 
     </script>
