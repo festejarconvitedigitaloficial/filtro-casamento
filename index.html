@@ -3,17 +3,18 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Filtro Universal V11</title>
+    <title>Filtro Final V12</title>
     
     <style>
         /* --- RESET --- */
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; outline: none; touch-action: manipulation; }
         body, html { 
             margin: 0; padding: 0; width: 100%; height: 100%; 
-            overflow: hidden; background-color: #000; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            overflow: hidden; background-color: #000; 
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
         }
 
-        /* --- VISUAL --- */
+        /* --- VÍDEO E CANVAS --- */
         #camera { display: none; }
         #canvasOutput {
             position: absolute; top: 0; left: 0; width: 100%; height: 100%;
@@ -24,8 +25,7 @@
         .controls-area {
             position: fixed; bottom: 0; left: 0; width: 100%; z-index: 9999; 
             padding-bottom: 40px; padding-top: 20px;
-            /* Degradê preto sutil para leitura */
-            background: linear-gradient(to top, rgba(0,0,0,0.6), transparent);
+            background: linear-gradient(to top, rgba(0,0,0,0.7), transparent);
             display: flex; justify-content: center;
         }
         .main-action-line {
@@ -35,22 +35,23 @@
 
         /* --- BOTÕES --- */
         .btn { cursor: pointer; transition: transform 0.2s; }
-        .btn:active { transform: scale(0.9); }
+        .btn:active { transform: scale(0.95); }
 
-        /* Botões Laterais (Neutros/Translucidos) */
+        /* Botões Laterais (Redondos e Neutros) */
         .btn-round {
             width: 48px; height: 48px; border-radius: 50%;
-            background-color: rgba(0, 0, 0, 0.3); /* Fundo escuro leve */
-            border: 1px solid rgba(255, 255, 255, 0.5);
+            background-color: rgba(0, 0, 0, 0.4); 
+            border: 1px solid rgba(255, 255, 255, 0.6);
             display: flex; justify-content: center; align-items: center;
             backdrop-filter: blur(4px);
         }
         .icon-svg { width: 24px; height: 24px; fill: white; }
         
+        /* Destaque quando modo vídeo está ativo */
         .video-active { background-color: white !important; }
         .video-active .icon-svg { fill: black !important; }
 
-        /* Botões de Filtro (Pílulas Brancas Neutras) */
+        /* Botões de Filtro (Pílulas) */
         .btn-filter {
             padding: 8px 16px; border-radius: 20px; border: none;
             font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px;
@@ -58,28 +59,36 @@
             background: rgba(255, 255, 255, 0.9); color: #000;
         }
 
-        /* --- BOTÃO PRINCIPAL (NEUTRO / UNIVERSAL) --- */
+        /* --- BOTÃO PRINCIPAL (COM ÍCONE DE CÂMERA) --- */
         .btn-shot-border {
             width: 80px; height: 80px; border-radius: 50%;
-            border: 4px solid white; /* Borda branca grossa */
+            border: 4px solid white; 
             background: transparent;
             display: flex; justify-content: center; align-items: center;
             position: relative;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.3);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
         }
         
         .btn-shot-inner {
             width: 68px; height: 68px; border-radius: 50%;
-            background: white; /* Centro branco */
+            background: white; 
+            display: flex; justify-content: center; align-items: center;
             transition: all 0.3s ease;
         }
 
-        /* Estado Gravando: Vira quadrado vermelho */
-        .recording .btn-shot-inner {
-            width: 35px; height: 35px; border-radius: 6px; /* Quadrado arredondado */
-            background: #ff3b30; /* Vermelho padrão de REC */
+        /* Ícone da câmera dentro do botão */
+        .icon-camera-center {
+            width: 32px; height: 32px; fill: #111;
+            transition: opacity 0.2s;
         }
-        .recording { border-color: rgba(255, 255, 255, 0.5); }
+
+        /* ESTADO GRAVANDO (Quadrado Vermelho) */
+        .recording .btn-shot-inner {
+            width: 35px; height: 35px; border-radius: 6px; 
+            background: #ff3b30; /* Vermelho */
+        }
+        .recording .icon-camera-center { opacity: 0; } /* Esconde o ícone */
+        .recording { border-color: rgba(255,255,255,0.6); }
 
         /* --- PREVIEW --- */
         #preview-screen {
@@ -89,7 +98,9 @@
         }
         .preview-content { 
             max-width: 90%; max-height: 70%; 
-            border-radius: 12px; margin-bottom: 20px; box-shadow: 0 4px 20px rgba(0,0,0,0.5);
+            border-radius: 12px; margin-bottom: 20px; 
+            box-shadow: 0 4px 20px rgba(0,0,0,0.5);
+            background: #000;
         }
         .preview-actions { display: flex; flex-direction: column; gap: 10px; width: 85%; }
         .btn-action {
@@ -97,20 +108,20 @@
             font-weight: 600; font-size: 15px; color: white; width: 100%;
             display: flex; justify-content: center; align-items: center; gap: 8px;
         }
-        /* Cores Neutras e Funcionais */
-        .btn-save { background: #007AFF; } /* Azul Padrão iOS */
-        .btn-share { background: #34C759; } /* Verde Universal */
-        .btn-retry { background: #3a3a3c; } /* Cinza Escuro */
+        .btn-save { background: #007AFF; } /* Azul iOS */
+        .btn-share { background: #34C759; } /* Verde WhatsApp */
+        .btn-back { background: #3a3a3c; } /* Cinza Escuro */
 
         #status-msg {
             position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
             color: white; font-size: 16px; pointer-events: none; text-align: center;
+            background: rgba(0,0,0,0.6); padding: 15px; border-radius: 10px;
         }
     </style>
 </head>
 <body>
 
-    <div id="status-msg">Toque para iniciar...</div>
+    <div id="status-msg">Iniciando câmera e áudio...<br>Por favor, aguarde.</div>
 
     <video id="camera" playsinline muted></video>
     <img id="moldura-source" src="moldura_lilas.png" style="display:none;">
@@ -127,13 +138,17 @@
             <button class="btn btn-filter" onclick="setFrame('moldura_lilas.png')">Filtro 1</button>
 
             <div id="btnShot" class="btn btn-shot-border" onclick="handleShot()">
-                <div class="btn-shot-inner"></div>
+                <div class="btn-shot-inner">
+                    <svg class="icon-camera-center" viewBox="0 0 24 24">
+                        <path d="M20 5h-3.17L15 3H9L7.17 5H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 14H4V7h4.05l1.83-2h4.24l1.83 2H20v12zM12 9c-2.76 0-5 2.24-5 5s2.24 5 5 5 5-2.24 5-5-2.24-5-5-5zm0 8c-1.66 0-3-1.34-3-3s1.34-3 3-3 3 1.34 3 3-1.34 3-3 3z"/>
+                    </svg>
+                </div>
             </div>
 
             <button class="btn btn-filter" onclick="setFrame('moldura_minimalista.png')">Filtro 2</button>
 
             <button id="btnMode" class="btn btn-round" onclick="toggleMode()">
-                 <svg class="icon-svg" viewBox="0 0 24 24"><path d="M17 10.5V7c0-.55-.45-1-1-1H4c-.55 0-1 .45-1 1v10c0 .55.45 1 1 1h12c.55 0 1-.45 1-1v-3.5l4 4v-11l-4 4z"/></svg>
+                <svg class="icon-svg" viewBox="0 0 24 24"><path d="M17 10.5V7c0-.55-.45-1-1-1H4c-.55 0-1 .45-1 1v10c0 .55.45 1 1 1h12c.55 0 1-.45 1-1v-3.5l4 4v-11l-4 4z"/></svg>
             </button>
 
         </div>
@@ -145,7 +160,7 @@
         <div class="preview-actions">
             <button class="btn-action btn-save" onclick="salvarMidia()">⬇ Salvar na Galeria</button>
             <button class="btn-action btn-share" onclick="compartilharMidia()">➤ Compartilhar</button>
-            <button class="btn-action btn-retry" onclick="fecharPreview()">✖ Fechar</button>
+            <button class="btn-action btn-back" onclick="fecharPreview()">↺ Voltar</button>
         </div>
     </div>
 
@@ -156,7 +171,8 @@
         const moldura = document.getElementById('moldura-source');
         const statusMsg = document.getElementById('status-msg');
         
-        let stream = null;
+        // Globais
+        let localStream = null;
         let facingMode = "user"; 
         let isVideoMode = false;
         let isRecording = false;
@@ -164,29 +180,31 @@
         let chunks = [];
         let finalFile = null;
 
-        // --- INICIALIZAÇÃO ---
+        // 1. INICIALIZAÇÃO SEGURA
         async function startCamera() {
             try {
-                if (stream) stream.getTracks().forEach(t => t.stop());
+                if (localStream) {
+                    localStream.getTracks().forEach(t => t.stop());
+                }
                 
-                // Pede vídeo e áudio
-                stream = await navigator.mediaDevices.getUserMedia({
+                // Pedir permissão explícita de Áudio E Vídeo
+                localStream = await navigator.mediaDevices.getUserMedia({
                     video: { facingMode: facingMode, width: { ideal: 1280 }, height: { ideal: 720 } },
                     audio: true
                 });
 
-                video.srcObject = stream;
+                video.srcObject = localStream;
+                // Importante: video.play() é necessário para iniciar o fluxo no iPhone
                 await video.play(); 
                 
                 statusMsg.style.display = 'none';
                 drawFrame(); 
             } catch (err) {
-                statusMsg.innerHTML = "Erro: " + err.message + "<br>Verifique permissões.";
+                statusMsg.innerHTML = "Erro: " + err.message + "<br>Verifique se permitiu Câmera e Microfone.";
                 console.error(err);
             }
         }
 
-        // --- DESENHO ---
         function drawFrame() {
             if (!video.paused && !video.ended) {
                 canvas.width = video.videoWidth;
@@ -205,7 +223,7 @@
             requestAnimationFrame(drawFrame);
         }
 
-        // --- CONTROLES ---
+        // 2. CONTROLES
         function virarCamera() {
             facingMode = facingMode === "user" ? "environment" : "user";
             startCamera();
@@ -219,14 +237,11 @@
             isVideoMode = !isVideoMode;
             document.getElementById('btnMode').classList.toggle('video-active');
             
-            // Feedback visual no botão principal
-            const innerBtn = document.querySelector('.btn-shot-inner');
-            if (isVideoMode) {
-                innerBtn.style.backgroundColor = '#ff3b30'; // Vermelho (indicativo de vídeo)
-                innerBtn.style.transform = 'scale(0.8)';
-            } else {
-                innerBtn.style.backgroundColor = 'white';
-                innerBtn.style.transform = 'scale(1)';
+            // Visual feedback no botão central
+            const icon = document.querySelector('.icon-camera-center');
+            // Se quiser mudar o ícone para câmera de vídeo aqui, pode, mas mantivemos o ícone de câmera preta.
+            if(isVideoMode) {
+               // Modo vídeo ativado
             }
         }
 
@@ -239,48 +254,60 @@
             }
         }
 
-        // --- FOTO ---
+        // 3. FOTO
         function takePhoto() {
-            // Flash effect
+            // Flash visual
             const flash = document.createElement('div');
-            flash.style.position = 'fixed'; flash.style.top = 0; flash.style.left = 0;
-            flash.style.width = '100%'; flash.style.height = '100%'; flash.style.background = 'white';
-            flash.style.zIndex = 10001; document.body.appendChild(flash);
+            flash.style.cssText = "position:fixed;top:0;left:0;width:100%;height:100%;background:white;z-index:99999;";
+            document.body.appendChild(flash);
             setTimeout(() => document.body.removeChild(flash), 100);
 
             canvas.toBlob(blob => {
                 finalFile = new File([blob], "foto.png", { type: "image/png" });
                 document.getElementById('result-img').src = URL.createObjectURL(blob);
                 showPreview('image');
-            });
+            }, 'image/png');
         }
 
-        // --- VÍDEO (COM ÁUDIO ROBUSTO) ---
+        // 4. VÍDEO COM ÁUDIO
         function startRecording() {
             const canvasStream = canvas.captureStream(30);
-            const audioTracks = stream.getAudioTracks();
             
-            // Aviso de Áudio
+            // Tenta pegar o áudio do stream original
+            const audioTracks = localStream.getAudioTracks();
+            
             if (audioTracks.length === 0) {
-                console.warn("Microfone não detectado.");
+                alert("Atenção: Microfone não detectado. O vídeo pode ficar sem som.");
             }
 
+            // Cria novo stream misto
             const combinedStream = new MediaStream([...canvasStream.getVideoTracks(), ...audioTracks]);
 
-            // Tenta MP4 -> WebM/H264 -> WebM Padrão
+            // Tenta codecs compatíveis com WhatsApp
             let options = { mimeType: 'video/webm' };
-            if (MediaRecorder.isTypeSupported('video/mp4')) options = { mimeType: 'video/mp4' };
-            else if (MediaRecorder.isTypeSupported('video/webm;codecs=h264')) options = { mimeType: 'video/webm;codecs=h264' };
+            if (MediaRecorder.isTypeSupported('video/mp4')) {
+                options = { mimeType: 'video/mp4' };
+            } else if (MediaRecorder.isTypeSupported('video/webm;codecs=h264')) {
+                options = { mimeType: 'video/webm;codecs=h264' };
+            }
 
-            mediaRecorder = new MediaRecorder(combinedStream, options);
+            try {
+                mediaRecorder = new MediaRecorder(combinedStream, options);
+            } catch (e) {
+                mediaRecorder = new MediaRecorder(combinedStream); // Fallback
+            }
+
             chunks = [];
-            
             mediaRecorder.ondataavailable = e => { if (e.data.size > 0) chunks.push(e.data); };
             
             mediaRecorder.onstop = () => {
                 const blob = new Blob(chunks, { type: mediaRecorder.mimeType });
-                let ext = mediaRecorder.mimeType.includes('mp4') ? 'mp4' : 'webm';
-                finalFile = new File([blob], `video.${ext}`, { type: mediaRecorder.mimeType });
+                
+                // Define extensão
+                let ext = 'webm';
+                if (mediaRecorder.mimeType.includes('mp4')) ext = 'mp4';
+                
+                finalFile = new File([blob], `video_filtro.${ext}`, { type: mediaRecorder.mimeType });
                 
                 const vidUrl = URL.createObjectURL(blob);
                 const vid = document.getElementById('result-video');
@@ -299,7 +326,7 @@
             document.getElementById('btnShot').classList.remove('recording');
         }
 
-        // --- PREVIEW E SHARE ---
+        // 5. PREVIEW E COMPARTILHAMENTO
         function showPreview(type) {
             document.getElementById('preview-screen').style.display = 'flex';
             document.getElementById('result-img').style.display = type === 'image' ? 'block' : 'none';
@@ -307,7 +334,7 @@
             vid.style.display = type === 'video' ? 'block' : 'none';
             
             if (type === 'video') {
-                vid.muted = false; 
+                vid.muted = false; // Garante som
                 vid.volume = 1.0;
                 vid.play();
             }
@@ -329,24 +356,27 @@
         async function compartilharMidia() {
             if (!finalFile) return;
             
-            // Verificação de suporte a compartilhamento
+            // Tenta compartilhar nativamente
             if (navigator.canShare && navigator.canShare({ files: [finalFile] })) {
                 try {
                     await navigator.share({
                         files: [finalFile],
-                        title: 'Minha Foto/Vídeo',
-                        text: 'Confira!'
+                        title: 'Filtro',
+                        text: 'Olha o vídeo que fiz!'
                     });
                 } catch (err) {
-                    console.log("Erro ao compartilhar (cancelado ou falha):", err);
+                    console.log("Erro share: " + err);
                 }
             } else {
-                alert("Seu celular não permite compartilhar este arquivo direto. Por favor, clique em 'SALVAR NA GALERIA' e envie manualmente.");
+                // Se falhar (comum para vídeos em alguns Androids/WebViews), avisa o usuário
+                alert("O compartilhamento direto de vídeo não é suportado pelo seu navegador atual. \n\nPor favor, clique em 'SALVAR NA GALERIA' e envie pelo WhatsApp manualmente.");
             }
         }
 
         // Inicia
-        document.body.addEventListener('click', () => { if (!stream) startCamera(); });
+        document.body.addEventListener('click', () => { 
+            if (!localStream) startCamera(); 
+        });
         window.onload = startCamera;
 
     </script>
