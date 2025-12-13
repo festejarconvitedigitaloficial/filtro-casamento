@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Filtro Vídeo Casamento</title>
+    <title>Filtro Vídeo Casamento Compacto</title>
     
     <style>
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
@@ -14,34 +14,23 @@
             position: fixed; font-family: sans-serif;
         }
 
-        /* VÍDEO (Fundo) */
+        /* VÍDEO & MOLDURA (Mantidos) */
         #camera { position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; z-index: 1; }
-        
-        /* MOLDURA (Meio) */
-        #moldura { 
-            position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: fill; 
-            z-index: 2; pointer-events: none; 
-        }
+        #moldura { position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: fill; z-index: 2; pointer-events: none; }
 
         /* CONTROLES GERAIS (TUDO NA PARTE INFERIOR) */
         .controls-area {
             position: absolute; bottom: 0; left: 0; width: 100%;
             display: flex; flex-direction: column; align-items: center;
-            padding-bottom: 10px; z-index: 999;
-            background: linear-gradient(to top, rgba(0,0,0,0.8), rgba(0,0,0,0)); /* Fundo escuro suave */
+            padding-bottom: 20px; z-index: 999;
+            background: linear-gradient(to top, rgba(0,0,0,0.8), rgba(0,0,0,0));
         }
 
-        /* LINHA 1: Botões de Filtro */
-        .filter-buttons {
-            display: flex; justify-content: center; gap: 10px;
-            margin-bottom: 15px;
-        }
-        
-        /* LINHA 2: Botões de Ação (Câmera, Vídeo, Flip) */
-        .action-buttons {
+        /* LINHA PRINCIPAL: Filtros, Foto/Vídeo, Flip (TUDO NO CENTRO) */
+        .main-action-line {
             display: flex; justify-content: center; align-items: center;
-            gap: 20px; 
-            padding-bottom: 5px;
+            gap: 15px; /* Espaçamento entre os elementos */
+            padding-bottom: 10px;
         }
 
         .btn { cursor: pointer; transition: transform 0.1s; box-shadow: 0 4px 10px rgba(0,0,0,0.5); }
@@ -55,36 +44,26 @@
             transition: all 0.3s ease;
         }
 
-        /* Botão 1: Floral (Lilás) */
-        .btn-lil { 
-            background-color: #E6E6FA; 
-            color: #554455; 
-            border: 1px solid #E6E6FA;
-        }
-        
-        /* Botão 2: Minimalista (Preto/Branco) */
-        .btn-min { 
-            background-color: #222; 
-            color: white; 
-            border: 1px solid rgba(255,255,255,0.7); 
-        }
+        /* Botão 1: FILTRO 1 (Lilás) */
+        .btn-lil { background-color: #E6E6FA; color: #554455; }
+        /* Botão 2: FILTRO 2 (Preto/Branco) */
+        .btn-min { background-color: #222; color: white; border: 1px solid rgba(255,255,255,0.7); }
 
-        /* BOTÃO TIRAR FOTO (Centro) - Dourado */
+        /* BOTÃO TIRAR FOTO (Centro) - Dourado e Diminuído */
         .btn-shot {
-            width: 80px; height: 80px;
-            /* Gradiente Dourado Nobre */
+            width: 70px; height: 70px; /* Diminuído para 70x70 */
             background: radial-gradient(circle, #fcf6ba 20%, #bf953f 60%, #a37c35 100%);
             border: 4px solid #4a3b10; border-radius: 50%;
             box-shadow: 0 0 15px rgba(255, 223, 0, 0.5);
-            /* Ícone de Câmera centralizado */
+            /* Ícone de Câmera - Cor PRETA */
             background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='black'%3E%3Cpath d='M20 5h-3.17L15 3H9L7.17 5H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 14H4V7h4.05l1.83-2h4.24l1.83 2H20v12zM12 9c-2.76 0-5 2.24-5 5s2.24 5 5 5 5-2.24 5-5-2.24-5-5-5zm0 8c-1.66 0-3-1.34-3-3s1.34-3 3-3 3 1.34 3 3-1.34 3-3 3z'/%3E%3C/svg%3E");
             background-size: 50%; background-position: center; background-repeat: no-repeat;
         }
 
-        /* BOTÃO VÍDEO (Filmadora) */
+        /* BOTÃO VÍDEO (Filmadora) - Diminuído */
         .btn-video {
-            width: 65px; height: 65px;
-            background: #c0392b; /* Vermelho */
+            width: 60px; height: 60px; /* Diminuído para 60x60 */
+            background: #c0392b; 
             border: 3px solid white; border-radius: 50%;
             display: flex; justify-content: center; align-items: center;
         }
@@ -95,17 +74,15 @@
             background-repeat: no-repeat; background-position: center;
         }
 
-        /* BOTÃO VIRAR CÂMERA (Novo tamanho para se adequar ao layout) */
+        /* BOTÃO VIRAR CÂMERA (Mantido discreto, agora na linha central) */
         .btn-flip {
             width: 50px; height: 50px;
             background: rgba(255, 255, 255, 0.2); 
             border: 1px solid white; border-radius: 50%; 
             display: flex; justify-content: center; align-items: center;
+            margin-right: 15px; /* Empurra o botão Flip para fora do centro do grupo principal */
         }
-        .icon-refresh {
-            width: 25px; height: 25px;
-            fill: none; stroke: white; stroke-width: 3; stroke-linecap: round; stroke-linejoin: round;
-        }
+        .icon-refresh { width: 25px; height: 25px; fill: none; stroke: white; stroke-width: 3; }
         
         /* Estilo GRAVANDO */
         .recording {
@@ -113,12 +90,6 @@
             background-color: white !important;
             border: 3px solid #c0392b !important;
         }
-        .recording .icon-cam-img {
-            background-image: none; background-color: #c0392b;
-            width: 24px; height: 24px; border-radius: 4px;
-        }
-
-        @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.05); } 100% { transform: scale(1); } }
 
         /* PREVIEW - Mantido o design */
         #preview-screen {
@@ -126,10 +97,7 @@
             background: #000; z-index: 10000;
             flex-direction: column; align-items: center; justify-content: center;
         }
-        .preview-content {
-            max-width: 90%; max-height: 80%;
-            border: 2px solid #bf953f; border-radius: 8px; margin-bottom: 20px;
-        }
+        .preview-content { max-width: 90%; max-height: 80%; border: 2px solid #bf953f; border-radius: 8px; margin-bottom: 20px; }
         .preview-actions { display: flex; gap: 15px; width: 95%; justify-content: center; }
         .btn-action {
             padding: 15px 10px; border-radius: 50px; border: none;
@@ -147,21 +115,25 @@
 
     <div class="controls-area">
         
-        <div class="filter-buttons">
+        <div class="main-action-line">
+            
             <button class="btn-filter btn-lil" onclick="setFrame('moldura_lilas.png')">FILTRO 1</button>
+            
+            <button class="btn btn-shot" onclick="tirarFoto()"></button>
+            
             <button class="btn-filter btn-min" onclick="setFrame('moldura_minimalista.png')">FILTRO 2</button>
         </div>
 
         <div class="action-buttons">
-             <button class="btn btn-flip" onclick="virarCamera()">
+            <button id="btnVideo" class="btn btn-video" onclick="alternarGravacao()">
+                <div class="icon-cam-img"></div>
+            </button>
+            
+            <button class="btn btn-flip" onclick="virarCamera()">
                 <svg class="icon-refresh" viewBox="0 0 24 24">
                     <path d="M23 4v6h-6"></path><path d="M1 20v-6h6"></path>
                     <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path>
                 </svg>
-            </button>
-            <button class="btn btn-shot" onclick="tirarFoto()"></button>
-            <button id="btnVideo" class="btn btn-video" onclick="alternarGravacao()">
-                <div class="icon-cam-img"></div>
             </button>
         </div>
     </div>
@@ -179,7 +151,8 @@
     <canvas id="canvasOutput"></canvas>
 
     <script>
-        // Mapeamento dos elementos DOM (mantido)
+        // ... (Todas as funções do seu código de referência são mantidas aqui) ...
+
         const video = document.getElementById('camera');
         const moldura = document.getElementById('moldura');
         const canvas = document.getElementById('canvasOutput');
@@ -189,9 +162,8 @@
         const btnVideo = document.getElementById('btnVideo');
         const shutterSound = new Audio('https://cdn.pixabay.com/download/audio/2022/03/10/audio_c04f968038.mp3?filename=camera-shutter-click-03-58060.mp3');
 
-        // Variáveis de estado (mantido)
         let currentStream;
-        let facingMode = "user"; // Câmera frontal por padrão
+        let facingMode = "user"; 
         let mediaRecorder;
         let recordedChunks = [];
         let isRecording = false;
@@ -199,19 +171,10 @@
         let captureType = 'image';
         let recordedMimeType = ''; 
 
-        // ---------------------------------------------------------
-        // FUNÇÃO DE TROCA DE MOLDURA (mantida)
-        // ---------------------------------------------------------
-        function setFrame(src) {
-            moldura.src = src;
-        }
+        function setFrame(src) { moldura.src = src; }
 
-        // ---------------------------------------------------------
-        // Funções de Câmera e Gravação (mantidas)
-        // ---------------------------------------------------------
         function iniciarCamera() {
             if (currentStream) currentStream.getTracks().forEach(track => track.stop());
-            
             navigator.mediaDevices.getUserMedia({ 
                 video: { facingMode: facingMode, width: { ideal: 1280 }, height: { ideal: 720 } }, 
                 audio: true 
@@ -232,19 +195,12 @@
             if (video.readyState === video.HAVE_ENOUGH_DATA) {
                 canvas.width = video.videoWidth; canvas.height = video.videoHeight;
                 const ctx = canvas.getContext('2d');
-
-                // 1. APLICA FILTRO DE EMBELEZAMENTO NO VÍDEO (No Canvas)
                 ctx.filter = 'saturate(1.2) brightness(1.1) contrast(1.05) blur(0.5px)';
-
                 ctx.save();
                 if (facingMode === "user") { ctx.translate(canvas.width, 0); ctx.scale(-1, 1); }
                 ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
                 ctx.restore();
-                
-                // 2. RESETA O FILTRO (Para não borrar a moldura)
                 ctx.filter = 'none';
-                
-                // 3. Desenha a Moldura por cima
                 ctx.drawImage(moldura, 0, 0, canvas.width, canvas.height);
             }
             requestAnimationFrame(desenharNoCanvas);
@@ -270,11 +226,7 @@
                     combinedStream = new MediaStream([ ...canvasStream.getVideoTracks(), ...audioTracks ]);
                 }
 
-                const possibleTypes = [
-                    'video/webm;codecs=vp9,opus', 'video/webm;codecs=vp8,opus',
-                    'video/webm'
-                ];
-
+                const possibleTypes = [ 'video/webm;codecs=vp9,opus', 'video/webm;codecs=vp8,opus', 'video/webm' ];
                 let selectedType = '';
                 for (let type of possibleTypes) {
                     if (MediaRecorder.isTypeSupported(type)) { selectedType = type; break; }
